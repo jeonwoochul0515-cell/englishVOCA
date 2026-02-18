@@ -1206,3 +1206,511 @@ const compoundData = {
     20822: { parts: ["Teil", "zeit", "arbeit"], partMeanings: ["부분", "시간", "일"], note: "파트타임 = '부분 시간 일'" },
     20834: { parts: ["Mit", "arbeiter"], partMeanings: ["함께", "일하는 사람"], note: "동료 = '함께 일하는 사람'" },
 };
+
+/* * ==========================================================================
+ * REKTION DATA (전치사 짝꿍 + 재귀동사)
+ * 동사/형용사 + 전치사 + 격(Akk/Dat) 세트
+ * ========================================================================== */
+const rektionData = {
+    // ---------- 동사 + 전치사 (Verb + Präposition) ----------
+
+    // warten auf + Akk.
+    20223: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "auf", case: "Akk",
+            formula: "warten auf + Akk.",
+            meaningKo: "~를/을 기다리다",
+            example: "Ich warte auf den Bus.",
+            exampleKo: "나는 버스를 기다린다."
+        }]
+    },
+    // denken an + Akk.
+    20096: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "an", case: "Akk",
+            formula: "denken an + Akk.",
+            meaningKo: "~를/을 생각하다",
+            example: "Ich denke an dich.",
+            exampleKo: "나는 너를 생각한다."
+        }]
+    },
+    // sich freuen auf/über + Akk.
+    20005: {
+        type: "verb", isReflexive: true,
+        patterns: [
+            {
+                prep: "auf", case: "Akk",
+                formula: "sich freuen auf + Akk.",
+                meaningKo: "~를/을 기대하다 (미래)",
+                example: "Ich freue mich auf die Ferien.",
+                exampleKo: "나는 방학을 기대한다."
+            },
+            {
+                prep: "über", case: "Akk",
+                formula: "sich freuen über + Akk.",
+                meaningKo: "~에 대해 기뻐하다 (현재/과거)",
+                example: "Ich freue mich über das Geschenk.",
+                exampleKo: "나는 선물에 대해 기뻐한다."
+            }
+        ]
+    },
+    // sich freuen (DAY 16 duplicate)
+    20491: {
+        type: "verb", isReflexive: true,
+        patterns: [
+            {
+                prep: "auf", case: "Akk",
+                formula: "sich freuen auf + Akk.",
+                meaningKo: "~를/을 기대하다 (미래)",
+                example: "Wir freuen uns auf das Wochenende.",
+                exampleKo: "우리는 주말을 기대한다."
+            },
+            {
+                prep: "über", case: "Akk",
+                formula: "sich freuen über + Akk.",
+                meaningKo: "~에 대해 기뻐하다 (현재/과거)",
+                example: "Sie freut sich über die gute Note.",
+                exampleKo: "그녀는 좋은 성적에 기뻐한다."
+            }
+        ]
+    },
+    // sich interessieren für + Akk.
+    20182: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "für", case: "Akk",
+            formula: "sich interessieren für + Akk.",
+            meaningKo: "~에 관심이 있다",
+            example: "Er interessiert sich für Musik.",
+            exampleKo: "그는 음악에 관심이 있다."
+        }]
+    },
+    // teilnehmen an + Dat.
+    20368: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "an", case: "Dat",
+            formula: "teilnehmen an + Dat.",
+            meaningKo: "~에 참가하다",
+            example: "Ich nehme an dem Kurs teil.",
+            exampleKo: "나는 그 강좌에 참가한다."
+        }]
+    },
+    // sich erinnern an + Akk.
+    20581: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "an", case: "Akk",
+            formula: "sich erinnern an + Akk.",
+            meaningKo: "~를/을 기억하다",
+            example: "Ich erinnere mich an den Urlaub.",
+            exampleKo: "나는 그 휴가를 기억한다."
+        }]
+    },
+    // erinnern an + Akk. (B1)
+    3608: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "an", case: "Akk",
+            formula: "sich erinnern an + Akk.",
+            meaningKo: "~를/을 기억하다 / ~에게 상기시키다",
+            example: "Erinnerst du dich an mich?",
+            exampleKo: "너 나를 기억하니?"
+        }]
+    },
+    // hoffen auf + Akk.
+    20164: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "auf", case: "Akk",
+            formula: "hoffen auf + Akk.",
+            meaningKo: "~를/을 바라다",
+            example: "Wir hoffen auf gutes Wetter.",
+            exampleKo: "우리는 좋은 날씨를 바란다."
+        }]
+    },
+    // bitten um + Akk.
+    20111: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "um", case: "Akk",
+            formula: "bitten um + Akk.",
+            meaningKo: "~를/을 부탁하다",
+            example: "Ich bitte um Hilfe.",
+            exampleKo: "나는 도움을 부탁한다."
+        }]
+    },
+    // gehören zu + Dat.
+    20460: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "zu", case: "Dat",
+            formula: "gehören zu + Dat.",
+            meaningKo: "~에 속하다",
+            example: "Das gehört zu meinem Job.",
+            exampleKo: "그것은 내 직업에 속한다."
+        }]
+    },
+    // gehören zu + Dat. (B1)
+    3614: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "zu", case: "Dat",
+            formula: "gehören zu + Dat.",
+            meaningKo: "~에 속하다, ~의 것이다",
+            example: "Der Hund gehört zu der Familie.",
+            exampleKo: "그 개는 그 가족에 속한다."
+        }]
+    },
+    // beginnen mit + Dat.
+    20091: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "beginnen mit + Dat.",
+            meaningKo: "~로/으로 시작하다",
+            example: "Wir beginnen mit der Arbeit.",
+            exampleKo: "우리는 일을 시작한다."
+        }]
+    },
+    // aufhören mit + Dat.
+    20784: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "aufhören mit + Dat.",
+            meaningKo: "~를/을 그만두다",
+            example: "Hör auf mit dem Lärm!",
+            exampleKo: "그 소음 좀 그만해!"
+        }]
+    },
+    // gratulieren zu + Dat.
+    20219: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "zu", case: "Dat",
+            formula: "gratulieren zu + Dat.",
+            meaningKo: "~를/을 축하하다",
+            example: "Ich gratuliere dir zum Geburtstag.",
+            exampleKo: "네 생일을 축하해."
+        }]
+    },
+    // antworten auf + Akk.
+    20218: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "auf", case: "Akk",
+            formula: "antworten auf + Akk.",
+            meaningKo: "~에 대답하다",
+            example: "Er antwortet auf die Frage.",
+            exampleKo: "그는 질문에 대답한다."
+        }]
+    },
+    // sich vorbereiten auf + Akk.
+    20371: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "auf", case: "Akk",
+            formula: "sich vorbereiten auf + Akk.",
+            meaningKo: "~를/을 준비하다",
+            example: "Ich bereite mich auf die Prüfung vor.",
+            exampleKo: "나는 시험을 준비한다."
+        }]
+    },
+    // sich erholen von + Dat.
+    20373: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "von", case: "Dat",
+            formula: "sich erholen von + Dat.",
+            meaningKo: "~에서 회복하다/쉬다",
+            example: "Er erholt sich von der Krankheit.",
+            exampleKo: "그는 병에서 회복 중이다."
+        }]
+    },
+    // träumen von + Dat.
+    20456: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "von", case: "Dat",
+            formula: "träumen von + Dat.",
+            meaningKo: "~에 대해 꿈꾸다",
+            example: "Ich träume von einer Reise.",
+            exampleKo: "나는 여행을 꿈꾼다."
+        }]
+    },
+    // glauben an + Akk.
+    20313: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "an", case: "Akk",
+            formula: "glauben an + Akk.",
+            meaningKo: "~를/을 믿다",
+            example: "Ich glaube an dich.",
+            exampleKo: "나는 너를 믿는다."
+        }]
+    },
+    // diskutieren über + Akk.
+    20728: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "über", case: "Akk",
+            formula: "diskutieren über + Akk.",
+            meaningKo: "~에 대해 토론하다",
+            example: "Wir diskutieren über das Thema.",
+            exampleKo: "우리는 그 주제에 대해 토론한다."
+        }]
+    },
+    // suchen nach + Dat.
+    20158: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "nach", case: "Dat",
+            formula: "suchen nach + Dat.",
+            meaningKo: "~를/을 찾다",
+            example: "Ich suche nach meinem Schlüssel.",
+            exampleKo: "나는 내 열쇠를 찾고 있다."
+        }]
+    },
+    // fragen nach + Dat.
+    20165: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "nach", case: "Dat",
+            formula: "fragen nach + Dat.",
+            meaningKo: "~에 대해 묻다",
+            example: "Er fragt nach dem Weg.",
+            exampleKo: "그는 길을 물어본다."
+        }]
+    },
+    // sprechen über + Akk.
+    20004: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "über", case: "Akk",
+            formula: "sprechen über + Akk.",
+            meaningKo: "~에 대해 말하다",
+            example: "Wir sprechen über den Film.",
+            exampleKo: "우리는 그 영화에 대해 말한다."
+        }]
+    },
+    // sich bewerben um + Akk.
+    20693: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "um", case: "Akk",
+            formula: "sich bewerben um + Akk.",
+            meaningKo: "~에 지원하다",
+            example: "Sie bewirbt sich um die Stelle.",
+            exampleKo: "그녀는 그 자리에 지원한다."
+        }]
+    },
+    // sich erkundigen nach + Dat.
+    20811: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "nach", case: "Dat",
+            formula: "sich erkundigen nach + Dat.",
+            meaningKo: "~에 대해 문의하다",
+            example: "Er erkundigt sich nach dem Preis.",
+            exampleKo: "그는 가격에 대해 문의한다."
+        }]
+    },
+    // nachdenken über + Akk.
+    20723: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "über", case: "Akk",
+            formula: "nachdenken über + Akk.",
+            meaningKo: "~에 대해 곰곰이 생각하다",
+            example: "Ich denke über das Problem nach.",
+            exampleKo: "나는 그 문제에 대해 곰곰이 생각한다."
+        }]
+    },
+    // aufpassen auf + Akk.
+    20485: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "auf", case: "Akk",
+            formula: "aufpassen auf + Akk.",
+            meaningKo: "~를/을 돌보다/주의하다",
+            example: "Pass auf die Kinder auf!",
+            exampleKo: "아이들을 돌봐!"
+        }]
+    },
+    // sich verabreden mit + Dat.
+    20638: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "sich verabreden mit + Dat.",
+            meaningKo: "~와/과 약속하다",
+            example: "Ich verabrede mich mit meiner Freundin.",
+            exampleKo: "나는 여자친구와 약속한다."
+        }]
+    },
+    // sich befreien von + Dat.
+    20730: {
+        type: "verb", isReflexive: true,
+        patterns: [{
+            prep: "von", case: "Dat",
+            formula: "sich befreien von + Dat.",
+            meaningKo: "~에서 해방되다",
+            example: "Er befreit sich von der Angst.",
+            exampleKo: "그는 두려움에서 해방된다."
+        }]
+    },
+    // sorgen für + Akk.
+    20646: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "für", case: "Akk",
+            formula: "sorgen für + Akk.",
+            meaningKo: "~를/을 돌보다/~를 위해 신경쓰다",
+            example: "Sie sorgt für ihre Kinder.",
+            exampleKo: "그녀는 아이들을 돌본다."
+        }]
+    },
+    // reden über + Akk.
+    20451: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "über", case: "Akk",
+            formula: "reden über + Akk.",
+            meaningKo: "~에 대해 이야기하다",
+            example: "Wir reden über die Zukunft.",
+            exampleKo: "우리는 미래에 대해 이야기한다."
+        }]
+    },
+    // telefonieren mit + Dat.
+    20191: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "telefonieren mit + Dat.",
+            meaningKo: "~와/과 전화하다",
+            example: "Ich telefoniere mit meiner Mutter.",
+            exampleKo: "나는 어머니와 전화한다."
+        }]
+    },
+    // vergleichen mit + Dat.
+    20153: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "vergleichen mit + Dat.",
+            meaningKo: "~와/과 비교하다",
+            example: "Vergleich die Preise mit dem Angebot.",
+            exampleKo: "가격을 그 제안과 비교해 봐."
+        }]
+    },
+    // vergleichen mit + Dat. (B1)
+    3606: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "vergleichen mit + Dat.",
+            meaningKo: "~와/과 비교하다",
+            example: "Man kann die zwei Städte nicht vergleichen.",
+            exampleKo: "두 도시를 비교할 수 없다."
+        }]
+    },
+    // erzählen von + Dat.
+    20134: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "von", case: "Dat",
+            formula: "erzählen von + Dat.",
+            meaningKo: "~에 대해 이야기하다",
+            example: "Er erzählt von seiner Reise.",
+            exampleKo: "그는 자신의 여행에 대해 이야기한다."
+        }]
+    },
+    // danken für + Akk.
+    20033: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "für", case: "Akk",
+            formula: "danken für + Akk.",
+            meaningKo: "~에 대해 감사하다",
+            example: "Ich danke dir für die Hilfe.",
+            exampleKo: "도움에 감사해."
+        }]
+    },
+    // helfen bei + Dat.
+    20100: {
+        type: "verb", isReflexive: false,
+        patterns: [{
+            prep: "bei", case: "Dat",
+            formula: "helfen bei + Dat.",
+            meaningKo: "~를/을 도와주다",
+            example: "Kannst du mir bei den Hausaufgaben helfen?",
+            exampleKo: "숙제 좀 도와줄 수 있어?"
+        }]
+    },
+
+    // ---------- 형용사 + 전치사 (Adjektiv + Präposition) ----------
+
+    // abhängig von + Dat.
+    3708: {
+        type: "adjective", isReflexive: false,
+        patterns: [{
+            prep: "von", case: "Dat",
+            formula: "abhängig von + Dat.",
+            meaningKo: "~에 의존하는/~에 달린",
+            example: "Das ist abhängig vom Wetter.",
+            exampleKo: "그것은 날씨에 달려 있다."
+        }]
+    },
+    // zufrieden mit + Dat.
+    20597: {
+        type: "adjective", isReflexive: false,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "zufrieden mit + Dat.",
+            meaningKo: "~에 만족하는",
+            example: "Ich bin zufrieden mit dem Ergebnis.",
+            exampleKo: "나는 결과에 만족한다."
+        }]
+    },
+    // neugierig auf + Akk.
+    20852: {
+        type: "adjective", isReflexive: false,
+        patterns: [{
+            prep: "auf", case: "Akk",
+            formula: "neugierig auf + Akk.",
+            meaningKo: "~에 대해 호기심 있는",
+            example: "Ich bin neugierig auf das neue Buch.",
+            exampleKo: "나는 새 책이 궁금하다."
+        }]
+    },
+    // einverstanden mit + Dat.
+    20747: {
+        type: "adjective", isReflexive: false,
+        patterns: [{
+            prep: "mit", case: "Dat",
+            formula: "einverstanden mit + Dat.",
+            meaningKo: "~에 동의하는",
+            example: "Bist du einverstanden mit dem Plan?",
+            exampleKo: "너 그 계획에 동의해?"
+        }]
+    },
+
+    // ---------- 순수 재귀동사 (Reflexivverb) ----------
+
+    20108: { type: "reflexive", isReflexive: true, patterns: [] },  // sich duschen
+    20168: { type: "reflexive", isReflexive: true, patterns: [] },  // sich schminken
+    20184: { type: "reflexive", isReflexive: true, patterns: [] },  // sich bewegen
+    20482: { type: "reflexive", isReflexive: true, patterns: [] },  // sich beeilen
+    20309: { type: "reflexive", isReflexive: true, patterns: [] },  // sich erkälten
+    20308: { type: "reflexive", isReflexive: true, patterns: [] },  // sich fühlen
+    20374: { type: "reflexive", isReflexive: true, patterns: [] },  // sich ausruhen
+    20610: { type: "reflexive", isReflexive: true, patterns: [] },  // sich ausziehen
+    20691: { type: "reflexive", isReflexive: true, patterns: [] },  // sich verspäten
+    20640: { type: "reflexive", isReflexive: true, patterns: [] },  // sich verletzen
+    20812: { type: "reflexive", isReflexive: true, patterns: [] },  // sich verwählen
+    20783: { type: "reflexive", isReflexive: true, patterns: [] },  // sich sonnen
+    20014: { type: "reflexive", isReflexive: true, patterns: [] },  // sich vorstellen
+};

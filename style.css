@@ -201,3 +201,141 @@ body.dark-mode .compound-part-meaning {
 body.dark-mode .compound-note {
     color: #c4b5fd;
 }
+
+/* === Rektion (전치사 짝꿍) 표시 === */
+.rektion-box {
+    margin-top: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.rektion-box.case-akk {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border: 1.5px solid #f59e0b;
+}
+
+.rektion-box.case-dat {
+    background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+    border: 1.5px solid #14b8a6;
+}
+
+.rektion-box.case-reflexive {
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+    border: 1.5px solid #a855f7;
+}
+
+.rektion-formula {
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.rektion-formula .rektion-verb {
+    color: #1f2937;
+}
+
+.rektion-formula .rektion-prep {
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.rektion-formula .rektion-case-akk {
+    background: #f59e0b;
+    color: white;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.rektion-formula .rektion-case-dat {
+    background: #14b8a6;
+    color: white;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.rektion-formula .rektion-sich {
+    background: #a855f7;
+    color: white;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.rektion-meaning-ko {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.rektion-example {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #374151;
+    font-style: italic;
+    border-left: 2px solid #d1d5db;
+    padding-left: 6px;
+}
+
+.rektion-example-ko {
+    font-size: 10px;
+    color: #9ca3af;
+    font-style: normal;
+}
+
+.rektion-separator {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 6px 0;
+}
+
+/* Rektion 다크모드 */
+body.dark-mode .rektion-box.case-akk {
+    background: linear-gradient(135deg, #451a03, #78350f);
+    border-color: #d97706;
+}
+
+body.dark-mode .rektion-box.case-dat {
+    background: linear-gradient(135deg, #042f2e, #134e4a);
+    border-color: #2dd4bf;
+}
+
+body.dark-mode .rektion-box.case-reflexive {
+    background: linear-gradient(135deg, #3b0764, #581c87);
+    border-color: #c084fc;
+}
+
+body.dark-mode .rektion-formula .rektion-verb {
+    color: #f3f4f6;
+}
+
+body.dark-mode .rektion-formula .rektion-prep {
+    color: #fca5a5;
+}
+
+body.dark-mode .rektion-meaning-ko {
+    color: #9ca3af;
+}
+
+body.dark-mode .rektion-example {
+    color: #d1d5db;
+    border-left-color: #4b5563;
+}
+
+body.dark-mode .rektion-example-ko {
+    color: #6b7280;
+}
+
+body.dark-mode .rektion-separator {
+    background: #374151;
+}

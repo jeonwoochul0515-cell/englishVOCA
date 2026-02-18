@@ -145,6 +145,17 @@ function createCard(item, index) {
     let polysemyBadge = item.polysemy ? `<span class="ml-1 text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-bold border border-orange-200">📚 다의어</span>` : '';
     const compound = compoundData[item.id];
     let compoundBadge = compound ? `<span class="ml-1 text-[9px] bg-pink-100 text-pink-700 px-1.5 py-0.5 rounded font-bold border border-pink-200">🔗 결합어</span>` : '';
+    const rektion = rektionData[item.id];
+    let rektionBadge = '';
+    if (rektion) {
+        if (rektion.type === 'reflexive') {
+            rektionBadge = `<span class="ml-1 text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold border border-purple-200">🪞 재귀동사</span>`;
+        } else if (rektion.type === 'adjective') {
+            rektionBadge = `<span class="ml-1 text-[9px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded font-bold border border-teal-200">🔗 전치사 짝꿍</span>`;
+        } else {
+            rektionBadge = `<span class="ml-1 text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-200">🔗 전치사 짝꿍</span>`;
+        }
+    }
     let levelColor = item.level.startsWith('A') ? "bg-yellow-100 text-yellow-800" : "bg-purple-100 text-purple-800";
     
     card.innerHTML = `
@@ -156,6 +167,7 @@ function createCard(item, index) {
                 ${cognateBadge}
                 ${polysemyBadge}
                 ${compoundBadge}
+                ${rektionBadge}
              </div>
              <span class="text-[10px] ${levelColor} px-1.5 py-0.5 rounded font-bold">${item.level}</span>
         </div>
@@ -163,6 +175,7 @@ function createCard(item, index) {
             <div class="flex flex-col w-full meaning-container transition-opacity duration-300 ${isMeaningHidden ? '' : 'revealed'}">
                 <span class="text-gray-800 font-medium text-lg leading-tight">${item.meaning}</span>
                 <span class="text-gray-400 text-xs italic mt-0.5">${item.english}</span>
+                ${rektion ? buildRektionDisplay(rektion) : ''}
                 ${compound ? buildCompoundEtymology(compound) : ''}
             </div>
             <button class="speaker-btn pointer-events-auto text-gray-300 hover:text-indigo-600 p-2 transition z-10" onclick="event.stopPropagation(); speak('${item.partOfSpeech === 'Noun' ? item.gender + ' ' + item.word : item.word}')">
@@ -179,24 +192,73 @@ function createCard(item, index) {
  * ========================================================================== */
 function attachSwipeEvents(card, item, index) {
     let startX = 0, currentX = 0, isDragging = false;
-    card.addEventListener('touchstart', e => { if (!e.target.closest('.speaker-btn')) { startX = e.touches[0].clientX; isDragging = true; card.style.transition = 'none'; } }, {passive: true});
+    let longPressTimer = null, longPressRevealed = false;
+
+    card.addEventListener('touchstart', e => {
+        if (e.target.closest('.speaker-btn')) return;
+        startX = e.touches[0].clientX;
+        currentX = startX;
+        isDragging = true;
+        longPressRevealed = false;
+        card.style.transition = 'none';
+
+        // 2초 롱프레스: 뜻 가리기 상태에서 뜻 엿보기
+        if (isMeaningHidden) {
+            longPressTimer = setTimeout(() => {
+                const mc = card.querySelector('.meaning-container');
+                if (mc && !mc.classList.contains('revealed')) {
+                    mc.classList.add('revealed');
+                    longPressRevealed = true;
+                    // 짧은 진동 피드백
+                    if (navigator.vibrate) navigator.vibrate(30);
+                }
+            }, 2000);
+        }
+    }, {passive: true});
+
     card.addEventListener('touchmove', e => {
         if (!isDragging) return;
         currentX = e.touches[0].clientX;
         const diffX = currentX - startX;
+        // 움직이기 시작하면 롱프레스 취소
+        if (Math.abs(diffX) > 10 && longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
         card.style.transform = `translateX(${diffX}px)`;
         card.querySelector('.hint-left').style.opacity = diffX < 0 ? Math.min(-diffX / 100, 1) : 0;
         card.querySelector('.hint-right').style.opacity = diffX > 0 ? Math.min(diffX / 100, 1) : 0;
     }, {passive: true});
+
     card.addEventListener('touchend', () => {
         if (!isDragging) return;
         isDragging = false;
+        // 롱프레스 타이머 정리
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+
+        // 롱프레스로 뜻이 보였으면 → 손 떼면 다시 숨기기 (스와이프/탭 무시)
+        if (longPressRevealed) {
+            const mc = card.querySelector('.meaning-container');
+            if (mc) mc.classList.remove('revealed');
+            longPressRevealed = false;
+            card.style.transition = 'transform 0.3s';
+            card.style.transform = 'translateX(0)';
+            return;
+        }
+
         const diffX = currentX - startX;
         if (Math.abs(diffX) < 5) toggleCardMeaning(card);
-        else if (diffX < -100) { card.style.transform = 'translateX(-120%)'; setTimeout(() => handleSwipeLeft(item), 200); }
-        else if (diffX > 100) { card.style.transform = 'translateX(120%)'; setTimeout(() => handleSwipeRight(item), 200); }
+        else if (diffX < -100) { card.style.transform = 'translateX(-120%)'; setTimeout(() => { handleSwipeLeft(item); speakNextWord(); }, 200); }
+        else if (diffX > 100) { card.style.transform = 'translateX(120%)'; setTimeout(() => { handleSwipeRight(item); speakNextWord(); }, 200); }
         else { card.style.transition = 'transform 0.3s'; card.style.transform = 'translateX(0)'; }
     });
+}
+
+function speakNextWord() {
+    if (!currentVocabList.length) return;
+    const next = currentVocabList[0];
+    const text = next.partOfSpeech === 'Noun' ? next.gender + ' ' + next.word : next.word;
+    setTimeout(() => speak(text), 300);
 }
 
 function removeWord(item) {
@@ -280,6 +342,42 @@ function buildCompoundEtymology(compound) {
         <div class="compound-parts">${partsHtml}</div>
         <div class="compound-note">${compound.note}</div>
     </div>`;
+}
+
+function buildRektionDisplay(rektion) {
+    if (rektion.patterns.length === 0) {
+        return `<div class="rektion-box case-reflexive mt-1">
+            <div class="rektion-formula">
+                <span class="rektion-sich">sich</span>
+                <span class="rektion-verb">재귀동사 (Reflexivverb)</span>
+            </div>
+            <div class="rektion-meaning-ko">이 동사는 항상 "sich"와 함께 씁니다</div>
+        </div>`;
+    }
+
+    const primaryCase = rektion.patterns[0].case;
+    const boxClass = primaryCase === 'Akk' ? 'case-akk' : 'case-dat';
+
+    let patternsHtml = rektion.patterns.map((pat, i) => {
+        const caseClass = pat.case === 'Akk' ? 'rektion-case-akk' : 'rektion-case-dat';
+        const caseLabel = pat.case === 'Akk' ? 'Akk. (4격)' : 'Dat. (3격)';
+        const verbPart = pat.formula.replace('sich ', '').split(' ')[0];
+
+        let patHtml = i > 0 ? '<div class="rektion-separator"></div>' : '';
+        patHtml += `<div class="rektion-formula">`;
+        if (rektion.isReflexive) patHtml += `<span class="rektion-sich">sich</span>`;
+        patHtml += `<span class="rektion-verb">${verbPart}</span>`;
+        patHtml += `<span class="rektion-prep">${pat.prep}</span>`;
+        patHtml += `<span class="${caseClass}">+ ${caseLabel}</span>`;
+        patHtml += `</div>`;
+        patHtml += `<div class="rektion-meaning-ko">${pat.meaningKo}</div>`;
+        if (pat.example) {
+            patHtml += `<div class="rektion-example">${pat.example}<div class="rektion-example-ko">${pat.exampleKo}</div></div>`;
+        }
+        return patHtml;
+    }).join('');
+
+    return `<div class="rektion-box ${boxClass} mt-1">${patternsHtml}</div>`;
 }
 
 function speak(text) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(text); u.lang = 'de-DE'; u.rate = 0.8; window.speechSynthesis.speak(u); } }
