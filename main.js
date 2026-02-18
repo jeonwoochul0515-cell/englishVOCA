@@ -255,8 +255,9 @@ function attachSwipeEvents(card, item, index) {
 }
 
 function speakNextWord() {
-    if (!currentVocabList.length) return;
-    const next = currentVocabList[0];
+    const list = activeFilter ? currentVocabList.filter(w => w.partOfSpeech === activeFilter) : currentVocabList;
+    if (!list.length) return;
+    const next = list[0];
     const text = next.partOfSpeech === 'Noun' ? next.gender + ' ' + next.word : next.word;
     setTimeout(() => speak(text), 300);
 }
