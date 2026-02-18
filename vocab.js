@@ -1057,3 +1057,152 @@ const masterVocabList = [
 
     // END_OF_VOCAB_LIST
 ];
+
+/* * ==========================================================================
+ * COMPOUND WORD DATA (Kompositum / 결합어)
+ * Maps word IDs to their compound parts with etymology
+ * ========================================================================== */
+const compoundData = {
+    // === Base words (결합어) ===
+    3007: { parts: ["zu", "Kunft"], partMeanings: ["~으로", "오다(kommen)에서 유래"], note: "미래 = '다가올 것'" },
+    3008: { parts: ["Um", "Welt"], partMeanings: ["둘레, 주위", "세상"], note: "환경 = '주위의 세상'" },
+    3009: { parts: ["Ein", "Fluss"], partMeanings: ["안으로", "흐름"], note: "영향 = '안으로 흘러드는 것'" },
+    3014: { parts: ["Zu", "Stand"], partMeanings: ["~에", "서 있음"], note: "상태 = '어떤 위치에 서 있는 것'" },
+
+    // === DAY 01 ===
+    20013: { parts: ["Fremd", "sprache"], partMeanings: ["낯선, 외국의", "언어"], note: "외국어 = '낯선 언어'" },
+    20019: { parts: ["Familien", "name"], partMeanings: ["가족의", "이름"], note: "성 = '가족의 이름'" },
+    20023: { parts: ["Haupt", "stadt"], partMeanings: ["주된, 으뜸의", "도시"], note: "수도 = '주된 도시'" },
+    20024: { parts: ["Geburt", "s", "ort"], partMeanings: ["출생", "연결음", "장소"], note: "출생지 = '태어난 장소'" },
+    20027: { parts: ["Post", "leit", "zahl"], partMeanings: ["우편", "안내의", "숫자"], note: "우편번호 = '우편 안내 숫자'" },
+
+    // === DAY 02 ===
+    20044: { parts: ["Groß", "eltern"], partMeanings: ["큰, 위대한", "부모"], note: "조부모 = '큰 부모'" },
+    20045: { parts: ["Groß", "vater"], partMeanings: ["큰, 위대한", "아버지"], note: "할아버지 = '큰 아버지'" },
+    20051: { parts: ["Wohn", "ort"], partMeanings: ["거주의", "장소"], note: "거주지 = '사는 장소'" },
+    20052: { parts: ["Familien", "stand"], partMeanings: ["가족의", "상태"], note: "결혼 상태 = '가족 상태'" },
+    20053: { parts: ["Familien", "foto"], partMeanings: ["가족의", "사진"], note: "가족 사진" },
+    20057: { parts: ["Groß", "familie"], partMeanings: ["큰", "가족"], note: "대가족 = '큰 가족'" },
+
+    // === DAY 03 ===
+    20074: { parts: ["Leben", "s", "mittel"], partMeanings: ["삶, 생명", "연결음", "수단"], note: "식료품 = '삶의 수단'" },
+    20076: { parts: ["Liebling", "s", "essen"], partMeanings: ["가장 좋아하는 것", "연결음", "음식"], note: "가장 좋아하는 음식" },
+    20078: { parts: ["Sonder", "angebot"], partMeanings: ["특별한", "제안, 제공"], note: "특가 = '특별한 제안'" },
+    20082: { parts: ["Abend", "essen"], partMeanings: ["저녁", "식사"], note: "저녁 식사 = '저녁에 먹는 것'" },
+    20083: { parts: ["Speise", "karte"], partMeanings: ["음식", "카드"], note: "메뉴판 = '음식 카드'" },
+
+    // === DAY 04 ===
+    20118: { parts: ["Wochen", "ende"], partMeanings: ["주(week)의", "끝"], note: "주말 = '한 주의 끝'" },
+    20120: { parts: ["Vor", "mittag"], partMeanings: ["전, 앞", "정오"], note: "오전 = '정오 전'" },
+
+    // === DAY 05 ===
+    20135: { parts: ["Haus", "aufgabe"], partMeanings: ["집", "과제"], note: "숙제 = '집에서 하는 과제'" },
+    20144: { parts: ["Wörter", "buch"], partMeanings: ["단어들", "책"], note: "사전 = '단어들의 책'" },
+
+    // === DAY 06 ===
+    20169: { parts: ["Kauf", "haus"], partMeanings: ["구매", "집, 건물"], note: "백화점 = '구매의 집'" },
+
+    // === DAY 07 ===
+    20197: { parts: ["Frei", "zeit"], partMeanings: ["자유로운", "시간"], note: "여가 = '자유로운 시간'" },
+
+    // === DAY 08 ===
+    20227: { parts: ["Geburt", "s", "tag"], partMeanings: ["출생", "연결음", "날"], note: "생일 = '태어난 날'" },
+    20232: { parts: ["Brief", "marke"], partMeanings: ["편지", "표시, 마크"], note: "우표 = '편지의 표시'" },
+    20233: { parts: ["Post", "karte"], partMeanings: ["우편", "카드"], note: "엽서 = '우편 카드'" },
+    20238: { parts: ["Feier", "abend"], partMeanings: ["축하, 행사", "저녁"], note: "퇴근 = '축하할 저녁' (일과 끝)" },
+
+    // === DAY 09 ===
+    20255: { parts: ["Wohn", "zimmer"], partMeanings: ["거주의", "방"], note: "거실 = '사는 방'" },
+    20262: { parts: ["Quadrat", "meter"], partMeanings: ["정사각형", "미터"], note: "제곱미터" },
+    20264: { parts: ["Neben", "kosten"], partMeanings: ["부수적인", "비용"], note: "관리비 = '부수 비용'" },
+
+    // === DAY 10 ===
+    20283: { parts: ["Straßen", "bahn"], partMeanings: ["거리의", "철도"], note: "전차 = '거리의 철도'" },
+    20286: { parts: ["Haupt", "bahn", "hof"], partMeanings: ["주된", "철도", "뜰, 역"], note: "중앙역 = '주된 철도역'" },
+    20287: { parts: ["Bahn", "steig"], partMeanings: ["철도", "오르는 곳"], note: "승강장 = '철도 오르는 곳'" },
+    20288: { parts: ["Flug", "zeug"], partMeanings: ["비행", "도구"], note: "비행기 = '비행 도구'" },
+    20289: { parts: ["Flug", "hafen"], partMeanings: ["비행", "항구"], note: "공항 = '비행 항구'" },
+    20292: { parts: ["Auto", "bahn"], partMeanings: ["자동차", "도로"], note: "고속도로 = '자동차 도로'" },
+    20294: { parts: ["Fahr", "rad"], partMeanings: ["주행", "바퀴"], note: "자전거 = '주행하는 바퀴'" },
+
+    // === DAY 11 ===
+    20322: { parts: ["Kranken", "haus"], partMeanings: ["아픈 사람들의", "집"], note: "병원 = '아픈 사람들의 집'" },
+
+    // === DAY 12 ===
+    20339: { parts: ["Himmel", "s", "richtung"], partMeanings: ["하늘", "연결음", "방향"], note: "방위 = '하늘의 방향'" },
+    20340: { parts: ["Jahr", "es", "zeit"], partMeanings: ["해, 년", "연결음", "시간"], note: "계절 = '한 해의 시간'" },
+    20345: { parts: ["Regen", "schirm"], partMeanings: ["비", "가리개"], note: "우산 = '비 가리개'" },
+    20347: { parts: ["Klima", "anlage"], partMeanings: ["기후", "설비"], note: "에어컨 = '기후 설비'" },
+    20348: { parts: ["Spazier", "gang"], partMeanings: ["거닐다", "걸음"], note: "산책 = '거니는 걸음'" },
+
+    // === DAY 13 ===
+    20381: { parts: ["Reise", "ziel"], partMeanings: ["여행", "목표"], note: "여행지 = '여행의 목표'" },
+    20382: { parts: ["Reise", "führer"], partMeanings: ["여행", "안내자"], note: "여행 가이드" },
+    20384: { parts: ["Information", "s", "material"], partMeanings: ["정보", "연결음", "자료"], note: "안내 자료 = '정보 자료'" },
+    20388: { parts: ["Land", "schaft"], partMeanings: ["땅, 지역", "~의 모습"], note: "풍경 = '땅의 모습'" },
+
+    // === DAY 16 ===
+    20480: { parts: ["Feier", "tag"], partMeanings: ["축하", "날"], note: "공휴일 = '축하하는 날'" },
+
+    // === DAY 17 ===
+    20493: { parts: ["Stadt", "zentrum"], partMeanings: ["도시", "중심"], note: "시내 중심가 = '도시의 중심'" },
+    20494: { parts: ["Buch", "handlung"], partMeanings: ["책", "거래, 상점"], note: "서점 = '책 상점'" },
+    20497: { parts: ["Sehen", "s", "würdig", "keit"], partMeanings: ["보다", "연결음", "가치 있는", "~함"], note: "명소 = '볼 가치가 있는 것'" },
+    20498: { parts: ["Eintritt", "s", "karte"], partMeanings: ["입장", "연결음", "카드"], note: "입장권 = '입장 카드'" },
+    20500: { parts: ["Jugend", "herberge"], partMeanings: ["청소년", "숙소"], note: "유스호스텔 = '청소년 숙소'" },
+    20505: { parts: ["Stadt", "plan"], partMeanings: ["도시", "지도, 계획"], note: "시내 지도 = '도시 지도'" },
+
+    // === DAY 18 ===
+    20536: { parts: ["Führer", "schein"], partMeanings: ["운전자", "증명서"], note: "운전면허증 = '운전자 증명서'" },
+    20538: { parts: ["Kfz", "Werkstatt"], partMeanings: ["자동차(Kraftfahrzeug)", "작업장"], note: "자동차 정비소 = '자동차 작업장'" },
+
+    // === DAY 19 ===
+    20550: { parts: ["Sprach", "prüfung"], partMeanings: ["언어의", "시험"], note: "어학 시험 = '언어 시험'" },
+    20561: { parts: ["Haupt", "fach"], partMeanings: ["주된", "과목"], note: "전공 = '주된 과목'" },
+    20562: { parts: ["Grund", "schule"], partMeanings: ["기초", "학교"], note: "초등학교 = '기초 학교'" },
+    20564: { parts: ["Klassen", "zimmer"], partMeanings: ["학급의", "방"], note: "교실 = '학급의 방'" },
+    20565: { parts: ["Studien", "gebühr"], partMeanings: ["학업의", "수수료"], note: "등록금 = '학업 수수료'" },
+
+    // === DAY 20 ===
+    20584: { parts: ["Um", "kleide", "kabine"], partMeanings: ["바꾸다", "옷을 입다", "칸"], note: "탈의실 = '옷 갈아입는 칸'" },
+    20587: { parts: ["Unter", "wäsche"], partMeanings: ["아래", "빨래, 옷"], note: "속옷 = '아래에 입는 옷'" },
+    20592: { parts: ["Taschen", "geld"], partMeanings: ["주머니의", "돈"], note: "용돈 = '주머니 돈'" },
+    20596: { parts: ["Geld", "beutel"], partMeanings: ["돈", "주머니"], note: "지갑 = '돈 주머니'" },
+
+    // === DAY 21 ===
+    20612: { parts: ["Reise", "büro"], partMeanings: ["여행", "사무실"], note: "여행사 = '여행 사무실'" },
+
+    // === DAY 22 ===
+    20647: { parts: ["Körper", "teil"], partMeanings: ["몸", "부분"], note: "신체 부위 = '몸의 부분'" },
+    20648: { parts: ["Sprech", "stunde"], partMeanings: ["말하다", "시간"], note: "진료시간 = '상담 시간'" },
+    20650: { parts: ["Kranken", "schein"], partMeanings: ["아픈 사람의", "증명서"], note: "진단서 = '병자 증명서'" },
+    20651: { parts: ["Kranken", "wagen"], partMeanings: ["아픈 사람의", "차량"], note: "구급차 = '병자의 차량'" },
+    20652: { parts: ["Warte", "zimmer"], partMeanings: ["기다리다", "방"], note: "대기실 = '기다리는 방'" },
+    20653: { parts: ["Schmerz", "mittel"], partMeanings: ["통증", "수단, 약제"], note: "진통제 = '통증의 약'" },
+    20655: { parts: ["Gesundheit", "s", "karte"], partMeanings: ["건강", "연결음", "카드"], note: "건강보험증 = '건강 카드'" },
+
+    // === DAY 23 ===
+    20680: { parts: ["Anruf", "beantworter"], partMeanings: ["전화", "응답기"], note: "자동응답기 = '전화 응답기'" },
+    20682: { parts: ["Augen", "blick"], partMeanings: ["눈의", "시선"], note: "순간 = '눈 깜짝할 사이'" },
+    20685: { parts: ["Gebrauch", "s", "anweisung"], partMeanings: ["사용", "연결음", "안내"], note: "사용설명서 = '사용 안내'" },
+
+    // === DAY 24 ===
+    20706: { parts: ["Durch", "wahl"], partMeanings: ["직통의", "선택, 다이얼"], note: "직통전화 = '직통 다이얼'" },
+    20708: { parts: ["Selbst", "bedienung"], partMeanings: ["스스로", "서비스"], note: "셀프서비스 = '자기 서비스'" },
+    20710: { parts: ["Geschäft", "s", "reise"], partMeanings: ["사업", "연결음", "여행"], note: "출장 = '사업 여행'" },
+    20714: { parts: ["Vorstellung", "s", "gespräch"], partMeanings: ["소개", "연결음", "대화"], note: "면접 = '소개 대화'" },
+    20717: { parts: ["Stellen", "angebot"], partMeanings: ["자리의", "제안"], note: "구인 광고 = '자리 제안'" },
+
+    // === DAY 25 ===
+    20743: { parts: ["Haupt", "sache"], partMeanings: ["주된", "것, 사안"], note: "요점 = '주된 것'" },
+
+    // === DAY 26 ===
+    20765: { parts: ["Geld", "automat"], partMeanings: ["돈", "자동기계"], note: "ATM = '돈 자동기계'" },
+    20768: { parts: ["Kredit", "karte"], partMeanings: ["신용", "카드"], note: "신용카드 = '신용 카드'" },
+    20772: { parts: ["Bar", "geld"], partMeanings: ["현금의, 즉시의", "돈"], note: "현금 = '즉시 쓸 수 있는 돈'" },
+    20775: { parts: ["Geheim", "zahl"], partMeanings: ["비밀의", "숫자"], note: "비밀번호 = '비밀 숫자'" },
+
+    // === DAY 28 ===
+    20822: { parts: ["Teil", "zeit", "arbeit"], partMeanings: ["부분", "시간", "일"], note: "파트타임 = '부분 시간 일'" },
+    20834: { parts: ["Mit", "arbeiter"], partMeanings: ["함께", "일하는 사람"], note: "동료 = '함께 일하는 사람'" },
+};

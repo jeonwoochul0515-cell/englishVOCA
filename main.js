@@ -14,6 +14,13 @@ let wordStats = {};
 const TARGET_DAILY_COUNT = 100;
 
 function initApp() {
+    // 다크모드 복원
+    if (localStorage.getItem('germanVocab_darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        const btn = document.getElementById('darkModeBtn');
+        if (btn) btn.innerHTML = '☀️ 라이트';
+    }
+
     const today = new Date().toDateString();
     const savedState = localStorage.getItem('germanVocabState_V5'); // 버전을 V5로 업데이트
     if (savedState) {
@@ -133,9 +140,11 @@ function createCard(item, index) {
     let mainText = item.partOfSpeech === 'Noun' ? `${item.gender.charAt(0).toUpperCase() + item.gender.slice(1)} ${item.word}` : item.word;
     card.classList.add(borderColor);
 
-    // 배지 생성 (다의어, 동일어원)
+    // 배지 생성 (다의어, 동일어원, 결합어)
     let cognateBadge = item.cognate ? `<span class="ml-1 text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold border border-indigo-200">🌱 동일어원</span>` : '';
     let polysemyBadge = item.polysemy ? `<span class="ml-1 text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-bold border border-orange-200">📚 다의어</span>` : '';
+    const compound = compoundData[item.id];
+    let compoundBadge = compound ? `<span class="ml-1 text-[9px] bg-pink-100 text-pink-700 px-1.5 py-0.5 rounded font-bold border border-pink-200">🔗 결합어</span>` : '';
     let levelColor = item.level.startsWith('A') ? "bg-yellow-100 text-yellow-800" : "bg-purple-100 text-purple-800";
     
     card.innerHTML = `
@@ -146,6 +155,7 @@ function createCard(item, index) {
                 <span class="font-bold text-xl ${textColor}">${mainText}</span>
                 ${cognateBadge}
                 ${polysemyBadge}
+                ${compoundBadge}
              </div>
              <span class="text-[10px] ${levelColor} px-1.5 py-0.5 rounded font-bold">${item.level}</span>
         </div>
@@ -153,6 +163,7 @@ function createCard(item, index) {
             <div class="flex flex-col w-full meaning-container transition-opacity duration-300 ${isMeaningHidden ? '' : 'revealed'}">
                 <span class="text-gray-800 font-medium text-lg leading-tight">${item.meaning}</span>
                 <span class="text-gray-400 text-xs italic mt-0.5">${item.english}</span>
+                ${compound ? buildCompoundEtymology(compound) : ''}
             </div>
             <button class="speaker-btn pointer-events-auto text-gray-300 hover:text-indigo-600 p-2 transition z-10" onclick="event.stopPropagation(); speak('${item.partOfSpeech === 'Noun' ? item.gender + ' ' + item.word : item.word}')">
                 <span class="text-xl">🔊</span>
@@ -244,6 +255,32 @@ function shuffleArray(arr) { for (let i = arr.length - 1; i > 0; i--) { const j 
 function shuffleCurrentList() { shuffleArray(currentVocabList); renderWords(); }
 
 function resetList() { if (confirm('초기화하시겠습니까?')) { localStorage.removeItem('germanVocabState_V5'); location.reload(); } }
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('germanVocab_darkMode', isDark);
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.innerHTML = isDark ? '☀️ 라이트' : '🌙 다크';
+}
+
+function buildCompoundEtymology(compound) {
+    let partsHtml = '';
+    for (let i = 0; i < compound.parts.length; i++) {
+        if (i > 0 && compound.parts[i] !== 's') {
+            partsHtml += `<span class="compound-plus">+</span>`;
+        }
+        if (compound.parts[i] === 's') {
+            partsHtml += `<span class="compound-part" style="padding:1px 3px;"><span class="compound-part-word" style="font-size:10px;">s</span><span class="compound-part-meaning">${compound.partMeanings[i]}</span></span>`;
+        } else {
+            partsHtml += `<span class="compound-part"><span class="compound-part-word">${compound.parts[i]}</span><span class="compound-part-meaning">${compound.partMeanings[i]}</span></span>`;
+        }
+    }
+    return `<div class="compound-etymology mt-1">
+        <div class="compound-parts">${partsHtml}</div>
+        <div class="compound-note">${compound.note}</div>
+    </div>`;
+}
 
 function speak(text) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(text); u.lang = 'de-DE'; u.rate = 0.8; window.speechSynthesis.speak(u); } }
 

@@ -79,3 +79,125 @@ body {
     0% { transform: scale(0.8); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
 }
+
+/* --- 다크 모드 --- */
+body.dark-mode {
+    background-color: #111827;
+    color: #e5e7eb;
+}
+
+body.dark-mode .bg-white\/95,
+body.dark-mode .bg-white {
+    background-color: rgba(31, 41, 55, 0.97) !important;
+}
+
+body.dark-mode .bg-gray-100 {
+    background-color: #111827 !important;
+}
+
+body.dark-mode .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
+}
+
+body.dark-mode .text-gray-800 {
+    color: #e5e7eb !important;
+}
+
+body.dark-mode .text-gray-400 {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .bg-white.p-4 {
+    background-color: #1f2937 !important;
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* 카드 다크모드 */
+body.dark-mode .card-touch {
+    background-color: #1f2937 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .card-touch .text-gray-800 {
+    color: #f3f4f6 !important;
+}
+
+body.dark-mode .card-touch .text-gray-400 {
+    color: #9ca3af !important;
+}
+
+/* 결합어 어원 표시 */
+.compound-etymology {
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+    border: 1px solid #f9a8d4;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+body.dark-mode .compound-etymology {
+    background: linear-gradient(135deg, #3b1f3b, #2d1a3e);
+    border-color: #7c3aed;
+}
+
+.compound-parts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+}
+
+.compound-part {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 11px;
+}
+
+body.dark-mode .compound-part {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+.compound-part-word {
+    font-weight: 700;
+    color: #7c3aed;
+    font-size: 12px;
+}
+
+body.dark-mode .compound-part-word {
+    color: #a78bfa;
+}
+
+.compound-part-meaning {
+    font-size: 9px;
+    color: #6b7280;
+}
+
+body.dark-mode .compound-part-meaning {
+    color: #9ca3af;
+}
+
+.compound-plus {
+    font-weight: bold;
+    color: #ec4899;
+    font-size: 14px;
+}
+
+.compound-note {
+    margin-top: 2px;
+    font-size: 10px;
+    color: #7c3aed;
+    font-weight: 600;
+}
+
+body.dark-mode .compound-note {
+    color: #c4b5fd;
+}
