@@ -720,6 +720,7 @@ function speakNextWord() {
     if (!list.length) return;
     const next = list[0];
     setTimeout(() => speak(next.word), 300);
+    setTimeout(() => speak(next.word), 1200);
 }
 
 function removeWord(item) {
