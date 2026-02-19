@@ -1,86 +1,392 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;600;700&display=swap');
 
-body { 
-    font-family: 'Noto Sans', 'Noto Sans KR', sans-serif; 
-    -webkit-tap-highlight-color: transparent; 
-    overflow-x: hidden; 
+body {
+    font-family: 'Noto Sans', 'Noto Sans KR', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
 }
 
 /* --- Scrollbar Utility --- */
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-.no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* --- UI 상태 스타일 --- */
-.hide-meaning .meaning-container, 
-.hide-meaning .breakdown { opacity: 0; }
+/* --- UI State --- */
+.hide-meaning .meaning-container { opacity: 0; }
+.hide-meaning .meaning-container.revealed { opacity: 1; }
 
-.hide-meaning .meaning-container.revealed, 
-.hide-meaning .breakdown.revealed { opacity: 1; }
-
-/* --- 인터랙션 & 애니메이션 --- */
-.card-touch { 
-    transition: transform 0.1s, opacity 0.3s; 
-    touch-action: pan-y; 
+/* --- Card Interaction --- */
+.card-touch {
+    transition: transform 0.1s, opacity 0.3s;
+    touch-action: pan-y;
 }
 
-.filter-active { 
-    ring-width: 3px; 
+.filter-active {
+    ring-width: 3px;
     --tw-ring-color: rgba(255, 255, 255, 0.8);
-    transform: scale(1.05); 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-/* --- 스와이프 힌트 --- */
-.swipe-hint { 
-    position: absolute; 
-    top: 50%; 
-    transform: translateY(-50%); 
-    font-size: 2rem; 
-    opacity: 0; 
-    transition: opacity 0.2s; 
-    pointer-events: none; 
-    z-index: 10; 
+/* --- Swipe Hints --- */
+.swipe-hint {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 2rem; opacity: 0; transition: opacity 0.2s;
+    pointer-events: none; z-index: 10;
 }
-.hint-left { right: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); } 
-.hint-right { left: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); } 
+.hint-left { right: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.hint-right { left: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-/* --- 축하 오버레이 애니메이션 --- */
+/* --- Celebration Overlay --- */
 #celebration-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85); z-index: 100;
-    display: flex; flex-col; justify-content: center; align-items: center;
+    display: flex; justify-content: center; align-items: center;
     opacity: 0; pointer-events: none; transition: opacity 0.5s;
 }
 #celebration-overlay.active { opacity: 1; pointer-events: auto; }
 
-.thumb-up { 
-    font-size: 8rem; 
-    animation: thumbsUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate; 
+.thumb-up {
+    font-size: 8rem;
+    animation: thumbsUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
 }
 @keyframes thumbsUp {
     0% { transform: scale(1) rotate(-10deg); }
     100% { transform: scale(1.2) rotate(10deg); }
 }
 
-.confetti { 
-    position: absolute; width: 10px; height: 10px; 
-    background-color: #f00; animation: fall linear forwards; 
-}
-@keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
-
-/* 버튼 팝 효과 */
 .btn-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes popIn {
     0% { transform: scale(0.8); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* --- 다크 모드 --- */
+/* --- Mode Tabs --- */
+.mode-tab {
+    background: #e5e7eb;
+    color: #6b7280;
+}
+.mode-tab.active {
+    background: #4f46e5;
+    color: white;
+}
+
+/* --- Day Filter Buttons --- */
+.day-btn {
+    background: #e5e7eb;
+    color: #374151;
+}
+.day-btn.active {
+    background: #4f46e5;
+    color: white;
+}
+
+/* --- IPA Display --- */
+.ipa-text {
+    font-family: 'Noto Sans', serif;
+    color: #8b5cf6;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* --- Word Root Etymology --- */
+.root-etymology {
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1px solid #93c5fd;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.root-parts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+}
+
+.root-part {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 11px;
+}
+
+.root-part-word {
+    font-weight: 700;
+    color: #2563eb;
+    font-size: 12px;
+}
+
+.root-part-meaning {
+    font-size: 9px;
+    color: #6b7280;
+}
+
+.root-plus {
+    font-weight: bold;
+    color: #3b82f6;
+    font-size: 14px;
+}
+
+.root-note {
+    margin-top: 2px;
+    font-size: 10px;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+/* --- Phrasal Verb Display --- */
+.phrasal-box {
+    margin-top: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1.5px solid #f59e0b;
+}
+
+.phrasal-formula {
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.phrasal-verb {
+    color: #1f2937;
+}
+
+.phrasal-particle {
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.phrasal-meaning {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.phrasal-example {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #374151;
+    font-style: italic;
+    border-left: 2px solid #d1d5db;
+    padding-left: 6px;
+}
+
+.phrasal-example-ko {
+    font-size: 10px;
+    color: #9ca3af;
+    font-style: normal;
+}
+
+.phrasal-separator {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 6px 0;
+}
+
+/* --- Collocation Display --- */
+.collocation-box {
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #86efac;
+    font-size: 11px;
+}
+
+.collocation-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+}
+
+.collocation-combo {
+    font-weight: 700;
+    color: #16a34a;
+    font-size: 12px;
+}
+
+.collocation-wrong {
+    font-size: 10px;
+    color: #dc2626;
+    text-decoration: line-through;
+}
+
+/* --- Word Family Display --- */
+.family-box {
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #fdf4ff, #fae8ff);
+    border: 1px solid #e879f9;
+    font-size: 11px;
+}
+
+.family-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.family-member {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 1px 6px;
+}
+
+.family-member-word {
+    font-weight: 700;
+    color: #a21caf;
+    font-size: 11px;
+}
+
+.family-member-pos {
+    font-size: 9px;
+    color: #6b7280;
+}
+
+.family-member-meaning {
+    font-size: 9px;
+    color: #9ca3af;
+}
+
+/* --- Confusing Pair Display --- */
+.confusing-box {
+    margin-top: 4px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+    border: 1.5px solid #fb7185;
+    font-size: 11px;
+}
+
+.confusing-vs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.confusing-word {
+    font-weight: 800;
+    font-size: 14px;
+    color: #e11d48;
+}
+
+.confusing-vs-label {
+    font-size: 10px;
+    color: #9ca3af;
+    font-weight: 700;
+}
+
+.confusing-explanation {
+    font-size: 10px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.confusing-tip {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #be123c;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* --- Quiz Mode --- */
+.quiz-option {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quiz-option:hover {
+    border-color: #818cf8;
+    background: #eef2ff;
+}
+
+.quiz-option.correct {
+    border-color: #22c55e;
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.quiz-option.wrong {
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.quiz-option.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* --- Stats Day Grid --- */
+.day-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: white;
+    transition: transform 0.2s;
+}
+
+.day-cell:hover {
+    transform: scale(1.2);
+}
+
+.day-cell.level-0 { background: #e5e7eb; color: #9ca3af; }
+.day-cell.level-1 { background: #bfdbfe; color: #1e40af; }
+.day-cell.level-2 { background: #93c5fd; color: #1e3a8a; }
+.day-cell.level-3 { background: #60a5fa; color: white; }
+.day-cell.level-4 { background: #3b82f6; color: white; }
+.day-cell.level-5 { background: #2563eb; color: white; }
+
+/* --- Hard Word Item --- */
+.hard-word-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: #fef2f2;
+    border-radius: 6px;
+    border-left: 3px solid #ef4444;
+}
+
+/* === DARK MODE === */
 body.dark-mode {
     background-color: #111827;
     color: #e5e7eb;
@@ -91,7 +397,8 @@ body.dark-mode .bg-white {
     background-color: rgba(31, 41, 55, 0.97) !important;
 }
 
-body.dark-mode .bg-gray-100 {
+body.dark-mode .bg-gray-100,
+body.dark-mode .footer-bg {
     background-color: #111827 !important;
 }
 
@@ -103,16 +410,19 @@ body.dark-mode .text-gray-800 {
     color: #e5e7eb !important;
 }
 
+body.dark-mode .text-gray-700 {
+    color: #d1d5db !important;
+}
+
+body.dark-mode .text-gray-500 {
+    color: #9ca3af !important;
+}
+
 body.dark-mode .text-gray-400 {
     color: #9ca3af !important;
 }
 
-body.dark-mode .bg-white.p-4 {
-    background-color: #1f2937 !important;
-    border-color: rgba(255,255,255,0.1);
-}
-
-/* 카드 다크모드 */
+/* Dark card */
 body.dark-mode .card-touch {
     background-color: #1f2937 !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.4);
@@ -122,220 +432,126 @@ body.dark-mode .card-touch .text-gray-800 {
     color: #f3f4f6 !important;
 }
 
-body.dark-mode .card-touch .text-gray-400 {
-    color: #9ca3af !important;
+/* Dark mode tabs */
+body.dark-mode .mode-tab {
+    background: #374151;
+    color: #9ca3af;
+}
+body.dark-mode .mode-tab.active {
+    background: #4f46e5;
+    color: white;
 }
 
-/* 결합어 어원 표시 */
-.compound-etymology {
-    margin-top: 4px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: linear-gradient(135deg, #fdf2f8, #fce7f3);
-    border: 1px solid #f9a8d4;
-    font-size: 11px;
-    line-height: 1.4;
+/* Dark day buttons */
+body.dark-mode .day-btn {
+    background: #374151;
+    color: #d1d5db;
+}
+body.dark-mode .day-btn.active {
+    background: #4f46e5;
+    color: white;
 }
 
-body.dark-mode .compound-etymology {
-    background: linear-gradient(135deg, #3b1f3b, #2d1a3e);
-    border-color: #7c3aed;
+/* Dark root etymology */
+body.dark-mode .root-etymology {
+    background: linear-gradient(135deg, #1e3a5f, #1e3050);
+    border-color: #3b82f6;
 }
-
-.compound-parts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    align-items: center;
-}
-
-.compound-part {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 4px;
-    padding: 1px 6px;
-    font-size: 11px;
-}
-
-body.dark-mode .compound-part {
+body.dark-mode .root-part {
     background: #374151;
     border-color: #4b5563;
     color: #e5e7eb;
 }
+body.dark-mode .root-part-word { color: #60a5fa; }
+body.dark-mode .root-part-meaning { color: #9ca3af; }
+body.dark-mode .root-note { color: #93c5fd; }
 
-.compound-part-word {
-    font-weight: 700;
-    color: #7c3aed;
-    font-size: 12px;
-}
-
-body.dark-mode .compound-part-word {
-    color: #a78bfa;
-}
-
-.compound-part-meaning {
-    font-size: 9px;
-    color: #6b7280;
-}
-
-body.dark-mode .compound-part-meaning {
-    color: #9ca3af;
-}
-
-.compound-plus {
-    font-weight: bold;
-    color: #ec4899;
-    font-size: 14px;
-}
-
-.compound-note {
-    margin-top: 2px;
-    font-size: 10px;
-    color: #7c3aed;
-    font-weight: 600;
-}
-
-body.dark-mode .compound-note {
-    color: #c4b5fd;
-}
-
-/* === Rektion (전치사 짝꿍) 표시 === */
-.rektion-box {
-    margin-top: 6px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.rektion-box.case-akk {
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
-    border: 1.5px solid #f59e0b;
-}
-
-.rektion-box.case-dat {
-    background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
-    border: 1.5px solid #14b8a6;
-}
-
-.rektion-box.case-reflexive {
-    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
-    border: 1.5px solid #a855f7;
-}
-
-.rektion-formula {
-    font-weight: 700;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-}
-
-.rektion-formula .rektion-verb {
-    color: #1f2937;
-}
-
-.rektion-formula .rektion-prep {
-    color: #dc2626;
-    font-size: 14px;
-    font-weight: 800;
-}
-
-.rektion-formula .rektion-case-akk {
-    background: #f59e0b;
-    color: white;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 800;
-}
-
-.rektion-formula .rektion-case-dat {
-    background: #14b8a6;
-    color: white;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 800;
-}
-
-.rektion-formula .rektion-sich {
-    background: #a855f7;
-    color: white;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 800;
-}
-
-.rektion-meaning-ko {
-    font-size: 11px;
-    color: #6b7280;
-    margin-top: 2px;
-}
-
-.rektion-example {
-    margin-top: 4px;
-    font-size: 11px;
-    color: #374151;
-    font-style: italic;
-    border-left: 2px solid #d1d5db;
-    padding-left: 6px;
-}
-
-.rektion-example-ko {
-    font-size: 10px;
-    color: #9ca3af;
-    font-style: normal;
-}
-
-.rektion-separator {
-    height: 1px;
-    background: #e5e7eb;
-    margin: 6px 0;
-}
-
-/* Rektion 다크모드 */
-body.dark-mode .rektion-box.case-akk {
+/* Dark phrasal verb */
+body.dark-mode .phrasal-box {
     background: linear-gradient(135deg, #451a03, #78350f);
     border-color: #d97706;
 }
+body.dark-mode .phrasal-verb { color: #f3f4f6; }
+body.dark-mode .phrasal-meaning { color: #9ca3af; }
+body.dark-mode .phrasal-example { color: #d1d5db; border-left-color: #4b5563; }
+body.dark-mode .phrasal-example-ko { color: #6b7280; }
+body.dark-mode .phrasal-separator { background: #374151; }
 
-body.dark-mode .rektion-box.case-dat {
-    background: linear-gradient(135deg, #042f2e, #134e4a);
-    border-color: #2dd4bf;
+/* Dark collocation */
+body.dark-mode .collocation-box {
+    background: linear-gradient(135deg, #052e16, #14532d);
+    border-color: #22c55e;
 }
+body.dark-mode .collocation-combo { color: #4ade80; }
 
-body.dark-mode .rektion-box.case-reflexive {
+/* Dark word family */
+body.dark-mode .family-box {
     background: linear-gradient(135deg, #3b0764, #581c87);
     border-color: #c084fc;
 }
-
-body.dark-mode .rektion-formula .rektion-verb {
-    color: #f3f4f6;
+body.dark-mode .family-member {
+    background: #374151;
+    border-color: #4b5563;
 }
+body.dark-mode .family-member-word { color: #d946ef; }
 
-body.dark-mode .rektion-formula .rektion-prep {
+/* Dark confusing pair */
+body.dark-mode .confusing-box {
+    background: linear-gradient(135deg, #4c0519, #881337);
+    border-color: #fb7185;
+}
+body.dark-mode .confusing-word { color: #fda4af; }
+body.dark-mode .confusing-explanation { color: #d1d5db; }
+body.dark-mode .confusing-tip { color: #fda4af; }
+
+/* Dark quiz */
+body.dark-mode .quiz-option {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+body.dark-mode .quiz-option:hover {
+    border-color: #818cf8;
+    background: #312e81;
+}
+body.dark-mode .quiz-option.correct {
+    border-color: #22c55e;
+    background: #052e16;
+    color: #4ade80;
+}
+body.dark-mode .quiz-option.wrong {
+    border-color: #ef4444;
+    background: #450a0a;
     color: #fca5a5;
 }
 
-body.dark-mode .rektion-meaning-ko {
-    color: #9ca3af;
+/* Dark stats */
+body.dark-mode .bg-white.rounded-xl {
+    background-color: #1f2937 !important;
 }
 
-body.dark-mode .rektion-example {
-    color: #d1d5db;
-    border-left-color: #4b5563;
+body.dark-mode .hard-word-item {
+    background: #450a0a;
+    border-left-color: #ef4444;
+    color: #fca5a5;
 }
 
-body.dark-mode .rektion-example-ko {
-    color: #6b7280;
+body.dark-mode .bg-gray-200 {
+    background-color: #374151 !important;
 }
 
-body.dark-mode .rektion-separator {
-    background: #374151;
+/* Dark dictation input */
+body.dark-mode #dict-input {
+    background: #1f2937;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+body.dark-mode .ipa-text {
+    color: #a78bfa;
+}
+
+/* IPA on card */
+body.dark-mode .card-ipa {
+    color: #a78bfa;
 }

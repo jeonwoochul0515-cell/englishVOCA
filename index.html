@@ -1,36 +1,46 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>독일어 단어장 (Pro Clean)</title>
+<title>EBS 수능 VOCA 1800</title>
 
-<!-- 모바일 최적화 설정 -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#4f46e5">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/197/197571.png">
 
-<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="style.css">
-
 </head>
 <body class="bg-gray-100 min-h-screen pb-20">
 
 <!-- 1. 헤더 및 컨트롤 패널 -->
 <div class="sticky top-0 z-50 bg-white/95 backdrop-blur shadow-md px-4 py-3">
     <div class="max-w-4xl mx-auto flex flex-col items-center">
-        <!-- 제목 영역 -->
         <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Coat_of_arms_of_Germany.svg/240px-Coat_of_arms_of_Germany.svg.png" alt="Bundesadler" class="h-6 w-auto object-contain">
-            <span id="level-title">SRS 단어장</span> 
+            <span class="text-2xl">📘</span>
+            <span id="level-title">EBS VOCA 1800</span>
             <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold" id="mode-badge">100단어 챌린지</span>
         </h1>
-        
-        <!-- 버튼 그룹 -->
-        <div class="mt-2 flex gap-2 w-full max-w-md overflow-x-auto pb-1 no-scrollbar">
+
+        <!-- 모드 선택 탭 -->
+        <div class="mt-2 flex gap-1 w-full max-w-md">
+            <button onclick="switchMode('flashcard')" id="tab-flashcard" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition mode-tab active">
+                📇 플래시카드
+            </button>
+            <button onclick="switchMode('quiz')" id="tab-quiz" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition mode-tab">
+                🧠 퀴즈
+            </button>
+            <button onclick="switchMode('dictation')" id="tab-dictation" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition mode-tab">
+                ✍️ 받아쓰기
+            </button>
+            <button onclick="switchMode('stats')" id="tab-stats" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition mode-tab">
+                📊 통계
+            </button>
+        </div>
+
+        <!-- 버튼 그룹 (플래시카드 모드) -->
+        <div id="flashcard-controls" class="mt-2 flex gap-2 w-full max-w-md overflow-x-auto pb-1 no-scrollbar">
             <button onclick="toggleMeanings()" id="toggleBtn" class="flex-1 bg-indigo-600 active:bg-indigo-700 text-white py-2 px-3 rounded-lg text-sm font-bold shadow transition whitespace-nowrap min-w-[90px]">
                 👁️ 뜻 가리기
             </button>
@@ -47,30 +57,134 @@
                 🌙 다크
             </button>
         </div>
-        
-        <!-- 가이드 -->
-        <div class="text-[10px] text-gray-400 mt-2 flex justify-between w-full max-w-sm px-2">
+
+        <!-- 가이드 (플래시카드 모드) -->
+        <div id="flashcard-guide" class="text-[10px] text-gray-400 mt-2 flex justify-between w-full max-w-sm px-2">
             <span class="flex items-center">⬅️ 왼쪽: 알아요 (학습완료)</span>
             <span class="flex items-center">오른쪽: 몰라요 (나중에 다시) ➡️</span>
         </div>
     </div>
 </div>
 
-<!-- 2. 메인 콘텐츠 (필터 & 카드) -->
-<div class="p-4 max-w-4xl mx-auto space-y-6">
+<!-- 2. 메인 콘텐츠 -->
+<div class="p-4 max-w-4xl mx-auto space-y-4">
+
+    <!-- Day 필터 (수평 스크롤) -->
+    <div id="day-filter" class="flex gap-1.5 overflow-x-auto pb-2 no-scrollbar text-xs font-bold">
+        <button onclick="toggleDayFilter(null)" id="btn-day-all" class="day-btn active shrink-0 px-3 py-1.5 rounded-full shadow transition">전체</button>
+    </div>
+
     <!-- 품사 필터 -->
-    <div class="grid grid-cols-4 gap-2 text-center text-xs font-bold text-white mb-4">
+    <div id="pos-filter" class="grid grid-cols-5 gap-2 text-center text-xs font-bold text-white">
         <button onclick="toggleFilter('Noun')" id="btn-noun" class="bg-blue-500 rounded p-1 shadow hover:bg-blue-600 transition active:scale-95">명사 <span id="count-noun">0</span></button>
         <button onclick="toggleFilter('Verb')" id="btn-verb" class="bg-red-500 rounded p-1 shadow hover:bg-red-600 transition active:scale-95">동사 <span id="count-verb">0</span></button>
         <button onclick="toggleFilter('Adjective')" id="btn-adjective" class="bg-green-500 rounded p-1 shadow hover:bg-green-600 transition active:scale-95">형용사 <span id="count-adjective">0</span></button>
+        <button onclick="toggleFilter('Adverb')" id="btn-adverb" class="bg-amber-500 rounded p-1 shadow hover:bg-amber-600 transition active:scale-95">부사 <span id="count-adverb">0</span></button>
         <button onclick="toggleFilter(null)" id="btn-total" class="bg-gray-500 rounded p-1 shadow hover:bg-gray-600 transition active:scale-95">전체 <span id="count-total">0</span></button>
     </div>
 
-    <!-- 단어 카드 컨테이너 -->
+    <!-- 플래시카드 컨테이너 -->
     <div id="word-container" class="space-y-3 relative pb-20"></div>
+
+    <!-- 퀴즈 모드 컨테이너 -->
+    <div id="quiz-container" class="hidden">
+        <div id="quiz-progress" class="text-center text-sm text-gray-500 mb-3">
+            <span id="quiz-current">0</span> / <span id="quiz-total">10</span>
+            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                <div id="quiz-bar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+        <div id="quiz-card" class="bg-white rounded-xl shadow-lg p-6 text-center">
+            <div id="quiz-question" class="text-2xl font-bold text-gray-800 mb-6"></div>
+            <div id="quiz-ipa" class="text-sm text-gray-400 mb-4"></div>
+            <div id="quiz-options" class="space-y-3"></div>
+            <div id="quiz-result" class="hidden mt-4 p-3 rounded-lg text-sm font-bold"></div>
+            <button id="quiz-next" class="hidden mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-indigo-700 transition" onclick="nextQuizQuestion()">다음 문제 →</button>
+        </div>
+        <div id="quiz-summary" class="hidden bg-white rounded-xl shadow-lg p-6 text-center">
+            <h2 class="text-2xl font-bold text-gray-800">퀴즈 결과</h2>
+            <div id="quiz-score" class="text-5xl font-bold text-indigo-600 my-4"></div>
+            <div id="quiz-wrong-list" class="text-left mt-4 space-y-2"></div>
+            <button onclick="startQuiz()" class="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-indigo-700 transition">다시 도전!</button>
+        </div>
+    </div>
+
+    <!-- 받아쓰기 모드 컨테이너 -->
+    <div id="dictation-container" class="hidden">
+        <div id="dict-progress" class="text-center text-sm text-gray-500 mb-3">
+            <span id="dict-current">0</span> / <span id="dict-total">10</span>
+            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                <div id="dict-bar" class="bg-emerald-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+        <div id="dict-card" class="bg-white rounded-xl shadow-lg p-6 text-center">
+            <button onclick="playDictationWord()" class="text-6xl mb-4 hover:scale-110 transition">🔊</button>
+            <p class="text-gray-500 text-sm mb-2">들리는 단어를 입력하세요</p>
+            <div id="dict-hint" class="text-lg text-gray-400 mb-4 font-mono tracking-widest"></div>
+            <input type="text" id="dict-input" class="w-full max-w-xs mx-auto border-2 border-gray-300 rounded-lg px-4 py-3 text-center text-xl font-bold focus:border-indigo-500 focus:outline-none transition"
+                   autocomplete="off" autocapitalize="off" spellcheck="false"
+                   onkeydown="if(event.key==='Enter') checkDictation()">
+            <div class="mt-3 flex gap-2 justify-center">
+                <button onclick="showDictHint()" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-lg text-sm font-bold">💡 힌트</button>
+                <button onclick="checkDictation()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold shadow">확인</button>
+            </div>
+            <div id="dict-result" class="hidden mt-4 p-3 rounded-lg text-sm font-bold"></div>
+            <button id="dict-next" class="hidden mt-4 bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-emerald-700 transition" onclick="nextDictation()">다음 →</button>
+        </div>
+        <div id="dict-summary" class="hidden bg-white rounded-xl shadow-lg p-6 text-center">
+            <h2 class="text-2xl font-bold text-gray-800">받아쓰기 결과</h2>
+            <div id="dict-score" class="text-5xl font-bold text-emerald-600 my-4"></div>
+            <div id="dict-wrong-list" class="text-left mt-4 space-y-2"></div>
+            <button onclick="startDictation()" class="mt-6 bg-emerald-600 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-emerald-700 transition">다시 도전!</button>
+        </div>
+    </div>
+
+    <!-- 통계 대시보드 -->
+    <div id="stats-container" class="hidden space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <div class="text-3xl font-bold text-indigo-600" id="stat-total-learned">0</div>
+                <div class="text-xs text-gray-500 mt-1">학습한 단어</div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <div class="text-3xl font-bold text-emerald-600" id="stat-mastered">0</div>
+                <div class="text-xs text-gray-500 mt-1">완전 암기</div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <div class="text-3xl font-bold text-amber-600" id="stat-streak">0</div>
+                <div class="text-xs text-gray-500 mt-1">연속 학습일</div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <div class="text-3xl font-bold text-red-500" id="stat-remaining">0</div>
+                <div class="text-xs text-gray-500 mt-1">남은 단어</div>
+            </div>
+        </div>
+
+        <!-- 학습 진도 바 -->
+        <div class="bg-white rounded-xl shadow p-4">
+            <h3 class="font-bold text-sm text-gray-700 mb-2">전체 진도율</h3>
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div id="stat-progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2" style="width: 0%">
+                    <span class="text-[10px] text-white font-bold" id="stat-progress-pct">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day별 진도 -->
+        <div class="bg-white rounded-xl shadow p-4">
+            <h3 class="font-bold text-sm text-gray-700 mb-3">Day별 학습 현황</h3>
+            <div id="stat-day-grid" class="grid grid-cols-10 gap-1.5"></div>
+        </div>
+
+        <!-- 가장 틀리는 단어 -->
+        <div class="bg-white rounded-xl shadow p-4">
+            <h3 class="font-bold text-sm text-gray-700 mb-3">자주 틀리는 단어 TOP 10</h3>
+            <div id="stat-hard-words" class="space-y-2"></div>
+        </div>
+    </div>
 </div>
 
-<!-- 3. 오버레이 & 오디오 -->
+<!-- 3. 축하 오버레이 -->
 <div id="celebration-overlay">
     <div class="text-center text-white">
         <div class="thumb-up">👍</div>
@@ -83,11 +197,11 @@
 <audio id="applause-sound" src="https://actions.google.com/sounds/v1/crowds/battle_crowd_celebrate_stutter.ogg"></audio>
 
 <!-- 푸터 -->
-<div class="text-center text-gray-400 text-xs pb-8 px-4 fixed bottom-0 w-full bg-gray-100 pt-2 pointer-events-none">
-    <p>Tip: SRS 알고리즘이 적용되어 아는 단어는 나중에,<br>모르는 단어는 즉시 반복됩니다.</p>
+<div class="text-center text-gray-400 text-xs pb-8 px-4 fixed bottom-0 w-full bg-gray-100 pt-2 pointer-events-none footer-bg">
+    <p>EBS 수능연계 VOCA 1800 | SRS 간격반복 학습</p>
 </div>
 
-<!-- 4. 자바스크립트 로직 -->
+<!-- 4. 자바스크립트 -->
 <script src="vocab.js"></script>
 <script src="main.js"></script>
 
