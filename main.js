@@ -15,14 +15,20 @@ let activeDayFilter = null;
 let wordStats = {};
 let currentMode = 'flashcard';
 const TARGET_DAILY_COUNT = 100;
-const STORAGE_KEY = 'ebsVoca1800_V1';
+const STORAGE_KEY = 'ebsVoca1800_V2';
 const DARK_KEY = 'ebsVoca1800_darkMode';
 const STREAK_KEY = 'ebsVoca1800_streak';
+
+// Ebbinghaus forgetting curve intervals (days)
+const EBBINGHAUS = [1, 3, 7, 14, 30, 60];
 
 /* ==========================================================================
  * 2. INITIALIZATION
  * ========================================================================== */
 function initApp() {
+    // Migrate old data if exists
+    migrateOldData();
+
     // Restore dark mode
     if (localStorage.getItem(DARK_KEY) === 'true') {
         document.body.classList.add('dark-mode');
@@ -35,21 +41,59 @@ function initApp() {
 
     const today = new Date().toDateString();
     const savedState = localStorage.getItem(STORAGE_KEY);
+
     if (savedState) {
         const state = JSON.parse(savedState);
         wordStats = state.wordStats || {};
-        if (state.lastDate !== today) {
-            updateStreak(state.lastDate);
-            fillList(state.currentList || []);
+
+        if (state.lastDate === today && state.currentListIds && state.currentListIds.length > 0) {
+            // Same day → restore list from saved IDs
+            currentVocabList = idsToWords(state.currentListIds);
         } else {
-            currentVocabList = state.currentList;
+            // New day → build fresh list
+            if (state.lastDate !== today) updateStreak(state.lastDate);
+            fillList();
         }
     } else {
-        fillList([]);
+        fillList();
     }
+
     saveState();
     renderWords();
     updateLevelTitle();
+}
+
+function migrateOldData() {
+    const oldState = localStorage.getItem('ebsVoca1800_V1');
+    if (!oldState) return;
+    const old = JSON.parse(oldState);
+    if (old.wordStats) {
+        // Convert old SM-2 stats to Ebbinghaus level
+        const newStats = {};
+        Object.entries(old.wordStats).forEach(([id, stat]) => {
+            newStats[id] = {
+                level: stat.reps || 0,
+                nextReview: stat.nextReview || 0,
+                wrongCount: stat.wrongCount || 0,
+                lastSeen: Date.now()
+            };
+        });
+        wordStats = newStats;
+        // Save migrated data and remove old key
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            lastDate: old.lastDate,
+            currentListIds: (old.currentList || []).map(w => w.id),
+            wordStats: newStats
+        }));
+    }
+    localStorage.removeItem('ebsVoca1800_V1');
+}
+
+// Convert array of word IDs back to word objects from masterVocabList
+function idsToWords(ids) {
+    const map = {};
+    masterVocabList.forEach(w => map[w.id] = w);
+    return ids.map(id => map[id]).filter(Boolean);
 }
 
 function buildDayFilter() {
@@ -78,66 +122,68 @@ function updateStreak(lastDateStr) {
 }
 
 /* ==========================================================================
- * 3. SRS FILL LIST (SM-2 Inspired)
+ * 3. SRS FILL LIST (Ebbinghaus Forgetting Curve)
  * ========================================================================== */
-function fillList(baseList) {
-    let newList = [...baseList];
-    let needed = TARGET_DAILY_COUNT - newList.length;
-    if (needed <= 0) { currentVocabList = newList; return; }
-
+function fillList() {
     const now = Date.now();
-    // Words due for review (past nextReview)
-    const dueWords = masterVocabList.filter(w =>
-        wordStats[w.id] && wordStats[w.id].nextReview <= now && !newList.some(nl => nl.id === w.id)
-    );
-    // New words (never seen)
-    const newWords = masterVocabList.filter(w =>
-        !wordStats[w.id] && !newList.some(nl => nl.id === w.id)
-    );
 
-    const halfNeeded = Math.floor(needed / 2);
-    shuffleArray(dueWords);
-    newList = [...newList, ...dueWords.slice(0, halfNeeded)];
+    // Review words: previously learned, now due for review
+    const reviewWords = masterVocabList.filter(w => {
+        const stat = wordStats[w.id];
+        return stat && stat.level > 0 && stat.nextReview <= now;
+    });
 
-    const remainingNeeded = TARGET_DAILY_COUNT - newList.length;
+    // New words: never seen before
+    const newWords = masterVocabList.filter(w => {
+        return !wordStats[w.id] || wordStats[w.id].level === 0;
+    });
+
+    shuffleArray(reviewWords);
     shuffleArray(newWords);
-    newList = [...newList, ...newWords.slice(0, remainingNeeded)];
 
-    // If still not enough, pull from any remaining
-    if (newList.length < TARGET_DAILY_COUNT) {
-        const remaining = masterVocabList.filter(w => !newList.some(nl => nl.id === w.id));
+    // Target: ~50% review, ~50% new
+    const halfTarget = Math.floor(TARGET_DAILY_COUNT / 2);
+    let list = [];
+
+    // Take review words (up to half)
+    list = list.concat(reviewWords.slice(0, halfTarget));
+
+    // Fill rest with new words
+    const newNeeded = TARGET_DAILY_COUNT - list.length;
+    list = list.concat(newWords.slice(0, newNeeded));
+
+    // If still not enough, pull from any remaining words
+    if (list.length < TARGET_DAILY_COUNT) {
+        const usedIds = new Set(list.map(w => w.id));
+        const remaining = masterVocabList.filter(w => !usedIds.has(w.id));
         shuffleArray(remaining);
-        newList = [...newList, ...remaining.slice(0, TARGET_DAILY_COUNT - newList.length)];
+        list = list.concat(remaining.slice(0, TARGET_DAILY_COUNT - list.length));
     }
 
-    shuffleArray(newList);
-    currentVocabList = newList;
+    shuffleArray(list);
+    currentVocabList = list;
 }
 
 /* ==========================================================================
- * 4. SWIPE HANDLERS (SM-2 Algorithm)
+ * 4. SWIPE HANDLERS (Ebbinghaus Forgetting Curve)
  * ========================================================================== */
 function handleSwipeLeft(item) {
-    // Know → increase interval (SM-2 style)
-    const stat = wordStats[item.id] || { interval: 0, ef: 2.5, reps: 0, nextReview: 0 };
-    stat.reps++;
-    if (stat.reps === 1) stat.interval = 1;
-    else if (stat.reps === 2) stat.interval = 3;
-    else stat.interval = Math.round(stat.interval * stat.ef);
-
-    stat.ef = Math.max(1.3, stat.ef + 0.1);
-    stat.nextReview = Date.now() + (stat.interval * 24 * 60 * 60 * 1000);
+    // Know → advance Ebbinghaus level
+    const stat = wordStats[item.id] || { level: 0, nextReview: 0, wrongCount: 0 };
+    stat.level = Math.min((stat.level || 0) + 1, EBBINGHAUS.length);
+    const days = stat.level >= EBBINGHAUS.length ? 90 : EBBINGHAUS[stat.level - 1];
+    stat.nextReview = Date.now() + (days * 24 * 60 * 60 * 1000);
+    stat.lastSeen = Date.now();
     wordStats[item.id] = stat;
     removeWord(item);
 }
 
 function handleSwipeRight(item) {
-    // Don't know → reset
-    const stat = wordStats[item.id] || { interval: 0, ef: 2.5, reps: 0, nextReview: 0 };
-    stat.reps = 0;
-    stat.interval = 0;
-    stat.ef = Math.max(1.3, stat.ef - 0.2);
+    // Don't know → reset level, move to back
+    const stat = wordStats[item.id] || { level: 0, nextReview: 0, wrongCount: 0 };
+    stat.level = 0;
     stat.nextReview = Date.now();
+    stat.lastSeen = Date.now();
     stat.wrongCount = (stat.wrongCount || 0) + 1;
     wordStats[item.id] = stat;
     moveWordToBack(item);
@@ -149,7 +195,7 @@ function handleSwipeRight(item) {
 function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
         lastDate: new Date().toDateString(),
-        currentList: currentVocabList,
+        currentListIds: currentVocabList.map(w => w.id),
         wordStats: wordStats
     }));
     updateCounts();
@@ -168,7 +214,7 @@ function renderWords() {
     if (currentVocabList.length === 0) {
         triggerCelebration();
         setTimeout(() => {
-            fillList([]);
+            fillList();
             saveState();
             renderWords();
             closeCelebration();
@@ -359,22 +405,26 @@ function attachSwipeEvents(card, item, index) {
             return;
         }
         const diffX = currentX - startX;
-        if (Math.abs(diffX) < 5) toggleCardMeaning(card);
-        else if (diffX < -100) {
+        if (Math.abs(diffX) < 5) {
+            toggleCardMeaning(card);
+        } else if (diffX < -100) {
+            // Swipe left → Know → remove from list
             const filtered = getFilteredList();
             const nextWord = filtered[filtered.indexOf(item) + 1];
             if (nextWord) speak(nextWord.word);
             card.style.transform = 'translateX(-120%)';
             setTimeout(() => handleSwipeLeft(item), 200);
-        }
-        else if (diffX > 100) {
+        } else if (diffX > 100) {
+            // Swipe right → Don't know → move to back
             const filtered = getFilteredList();
             const nextWord = filtered[filtered.indexOf(item) + 1];
             if (nextWord) speak(nextWord.word);
             card.style.transform = 'translateX(120%)';
             setTimeout(() => handleSwipeRight(item), 200);
+        } else {
+            card.style.transition = 'transform 0.3s';
+            card.style.transform = 'translateX(0)';
         }
-        else { card.style.transition = 'transform 0.3s'; card.style.transform = 'translateX(0)'; }
     });
 }
 
@@ -450,8 +500,7 @@ function checkQuizAnswer(btn, isCorrect, word) {
         document.getElementById('quiz-result').textContent = `오답! 정답: ${word.meaning}`;
         document.getElementById('quiz-result').className = 'mt-4 p-3 rounded-lg text-sm font-bold bg-red-100 text-red-700';
         quizWrongList.push(word);
-        // Track wrong count
-        const stat = wordStats[word.id] || { interval: 0, ef: 2.5, reps: 0, nextReview: 0 };
+        const stat = wordStats[word.id] || { level: 0, nextReview: 0, wrongCount: 0 };
         stat.wrongCount = (stat.wrongCount || 0) + 1;
         wordStats[word.id] = stat;
         saveState();
@@ -551,7 +600,7 @@ function checkDictation() {
         resultEl.innerHTML = `오답! 정답: <strong>${word.word}</strong> ${word.ipa || ''}<br>${word.meaning}`;
         resultEl.className = 'mt-4 p-3 rounded-lg text-sm font-bold bg-red-100 text-red-700';
         dictWrongList.push(word);
-        const stat = wordStats[word.id] || { interval: 0, ef: 2.5, reps: 0, nextReview: 0 };
+        const stat = wordStats[word.id] || { level: 0, nextReview: 0, wrongCount: 0 };
         stat.wrongCount = (stat.wrongCount || 0) + 1;
         wordStats[word.id] = stat;
         saveState();
@@ -587,8 +636,8 @@ function showDictSummary() {
  * ========================================================================== */
 function renderStats() {
     const total = masterVocabList.length;
-    const learned = Object.keys(wordStats).filter(id => wordStats[id].reps > 0).length;
-    const mastered = Object.keys(wordStats).filter(id => wordStats[id].interval >= 7).length;
+    const learned = Object.keys(wordStats).filter(id => (wordStats[id].level || 0) > 0).length;
+    const mastered = Object.keys(wordStats).filter(id => (wordStats[id].level || 0) >= EBBINGHAUS.length).length;
     const remaining = total - learned;
     const streakData = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"count":0}');
 
@@ -607,7 +656,7 @@ function renderStats() {
     dayGrid.innerHTML = '';
     for (let d = 1; d <= 60; d++) {
         const dayWords = masterVocabList.filter(w => w.day === d);
-        const dayLearned = dayWords.filter(w => wordStats[w.id] && wordStats[w.id].reps > 0).length;
+        const dayLearned = dayWords.filter(w => wordStats[w.id] && (wordStats[w.id].level || 0) > 0).length;
         const ratio = dayLearned / dayWords.length;
         let level = 0;
         if (ratio > 0) level = 1;
@@ -717,8 +766,7 @@ function updateLevelTitle() {
     if (activeDayFilter) {
         el.textContent = `Day ${activeDayFilter}`;
     } else {
-        const days = Array.from(new Set(currentVocabList.map(w => w.day))).sort((a,b) => a-b);
-        el.textContent = days.length > 3 ? `EBS VOCA 1800` : `Day ${days.join(', ')}`;
+        el.textContent = `오늘의 단어 ${currentVocabList.length}개`;
     }
 }
 
@@ -728,13 +776,22 @@ function updateUndoButton() {
 }
 
 function removeWord(item) {
-    const idx = currentVocabList.indexOf(item);
-    if (idx > -1) { deletedHistory.push(item); currentVocabList.splice(idx, 1); renderWords(); saveState(); }
+    const idx = currentVocabList.findIndex(w => w.id === item.id);
+    if (idx > -1) {
+        deletedHistory.push(currentVocabList[idx]);
+        currentVocabList.splice(idx, 1);
+        renderWords();
+        saveState();
+    }
 }
 
 function moveWordToBack(item) {
-    const idx = currentVocabList.indexOf(item);
-    if (idx > -1) { currentVocabList.push(currentVocabList.splice(idx, 1)[0]); renderWords(); saveState(); }
+    const idx = currentVocabList.findIndex(w => w.id === item.id);
+    if (idx > -1) {
+        currentVocabList.push(currentVocabList.splice(idx, 1)[0]);
+        renderWords();
+        saveState();
+    }
 }
 
 function undoDelete() {
