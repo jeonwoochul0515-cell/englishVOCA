@@ -49,6 +49,13 @@ function initApp() {
         if (state.lastDate === today && state.currentListIds && state.currentListIds.length > 0) {
             // Same day → restore list from saved IDs
             currentVocabList = idsToWords(state.currentListIds);
+            // Safety: remove words already known but not yet due for review
+            const now = Date.now();
+            currentVocabList = currentVocabList.filter(w => {
+                const stat = wordStats[w.id];
+                if (!stat || stat.level === 0) return true;
+                return stat.nextReview <= now;
+            });
         } else {
             // New day → build fresh list
             if (state.lastDate !== today) updateStreak(state.lastDate);
