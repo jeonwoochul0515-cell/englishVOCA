@@ -720,15 +720,18 @@ function speakNextWord() {
     if (!list.length) return;
     const next = list[0];
     setTimeout(() => {
+        if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
         const u1 = new SpeechSynthesisUtterance(next.word);
         u1.lang = 'en-US';
         u1.rate = 0.85;
-        const u2 = new SpeechSynthesisUtterance(next.word);
-        u2.lang = 'en-US';
-        u2.rate = 0.85;
+        u1.onend = function() {
+            const u2 = new SpeechSynthesisUtterance(next.word);
+            u2.lang = 'en-US';
+            u2.rate = 0.85;
+            window.speechSynthesis.speak(u2);
+        };
         window.speechSynthesis.speak(u1);
-        window.speechSynthesis.speak(u2);
     }, 300);
 }
 
