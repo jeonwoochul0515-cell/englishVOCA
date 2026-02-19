@@ -199,9 +199,11 @@
     <p>EBS 수능연계 VOCA 1800 | SRS 간격반복 학습</p>
 </div>
 
-<!-- 4. 자바스크립트 -->
-<script src="vocab.js?v=5"></script>
-<script src="main.js?v=5"></script>
+<!-- 4. 자바스크립트 (타임스탬프로 캐시 완전 방지) -->
+<script>
+document.write('<scr'+'ipt src="vocab.js?t='+Date.now()+'"></scr'+'ipt>');
+document.write('<scr'+'ipt src="main.js?t='+Date.now()+'"></scr'+'ipt>');
+</script>
 
 </body>
 </html>
