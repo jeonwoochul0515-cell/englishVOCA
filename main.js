@@ -719,8 +719,17 @@ function speakNextWord() {
     const list = getFilteredList();
     if (!list.length) return;
     const next = list[0];
-    setTimeout(() => speak(next.word), 300);
-    setTimeout(() => speak(next.word), 1200);
+    setTimeout(() => {
+        window.speechSynthesis.cancel();
+        const u1 = new SpeechSynthesisUtterance(next.word);
+        u1.lang = 'en-US';
+        u1.rate = 0.85;
+        const u2 = new SpeechSynthesisUtterance(next.word);
+        u2.lang = 'en-US';
+        u2.rate = 0.85;
+        window.speechSynthesis.speak(u1);
+        window.speechSynthesis.speak(u2);
+    }, 300);
 }
 
 function removeWord(item) {
