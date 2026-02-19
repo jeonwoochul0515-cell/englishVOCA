@@ -295,9 +295,14 @@ function createCard(item, index) {
                 ${family ? buildFamilyDisplay(family) : ''}
                 ${confusing ? buildConfusingDisplay(confusing) : ''}
             </div>
-            <button class="speaker-btn pointer-events-auto text-gray-300 hover:text-indigo-600 p-2 transition z-10" onclick="event.stopPropagation(); speak('${item.word.replace(/'/g, "\\'")}')">
-                <span class="text-xl">🔊</span>
-            </button>
+            <div class="flex flex-col items-center gap-1 pointer-events-auto z-10">
+                <button class="speaker-btn text-gray-300 hover:text-indigo-600 p-1 transition" onclick="event.stopPropagation(); speak('${item.word.replace(/'/g, "\\'")}')">
+                    <span class="text-xl">🔊</span>
+                </button>
+                <button class="know-btn text-[10px] bg-emerald-500 text-white px-2 py-1 rounded-full font-bold shadow hover:bg-emerald-600 transition" onclick="event.stopPropagation(); markAsKnown(${item.id})">
+                    ✅ 알아요
+                </button>
+            </div>
         </div>
     `;
     attachSwipeEvents(card, item, index);
@@ -782,13 +787,18 @@ function updateUndoButton() {
     if (btn) btn.classList.toggle('hidden', !deletedHistory.length);
 }
 
+function markAsKnown(wordId) {
+    const item = currentVocabList.find(w => w.id === wordId);
+    if (item) handleSwipeLeft(item);
+}
+
 function removeWord(item) {
     const idx = currentVocabList.findIndex(w => w.id === item.id);
     if (idx > -1) {
         deletedHistory.push(currentVocabList[idx]);
         currentVocabList.splice(idx, 1);
-        renderWords();
         saveState();
+        renderWords();
     }
 }
 
@@ -796,8 +806,8 @@ function moveWordToBack(item) {
     const idx = currentVocabList.findIndex(w => w.id === item.id);
     if (idx > -1) {
         currentVocabList.push(currentVocabList.splice(idx, 1)[0]);
-        renderWords();
         saveState();
+        renderWords();
     }
 }
 
