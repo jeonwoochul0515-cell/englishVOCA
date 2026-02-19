@@ -360,8 +360,20 @@ function attachSwipeEvents(card, item, index) {
         }
         const diffX = currentX - startX;
         if (Math.abs(diffX) < 5) toggleCardMeaning(card);
-        else if (diffX < -100) { card.style.transform = 'translateX(-120%)'; setTimeout(() => { handleSwipeLeft(item); speakNextWord(); }, 200); }
-        else if (diffX > 100) { card.style.transform = 'translateX(120%)'; setTimeout(() => { handleSwipeRight(item); speakNextWord(); }, 200); }
+        else if (diffX < -100) {
+            const filtered = getFilteredList();
+            const nextWord = filtered[filtered.indexOf(item) + 1];
+            if (nextWord) speak(nextWord.word);
+            card.style.transform = 'translateX(-120%)';
+            setTimeout(() => handleSwipeLeft(item), 200);
+        }
+        else if (diffX > 100) {
+            const filtered = getFilteredList();
+            const nextWord = filtered[filtered.indexOf(item) + 1];
+            if (nextWord) speak(nextWord.word);
+            card.style.transform = 'translateX(120%)';
+            setTimeout(() => handleSwipeRight(item), 200);
+        }
         else { card.style.transition = 'transform 0.3s'; card.style.transform = 'translateX(0)'; }
     });
 }
@@ -713,13 +725,6 @@ function updateLevelTitle() {
 function updateUndoButton() {
     const btn = document.getElementById('undoBtn');
     if (btn) btn.classList.toggle('hidden', !deletedHistory.length);
-}
-
-function speakNextWord() {
-    const list = getFilteredList();
-    if (!list.length) return;
-    const next = list[0];
-    setTimeout(() => speak(next.word), 300);
 }
 
 function removeWord(item) {
