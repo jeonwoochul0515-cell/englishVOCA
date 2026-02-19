@@ -15,7 +15,7 @@ let activeDayFilter = null;
 let wordStats = {};
 let currentMode = 'flashcard';
 const TARGET_DAILY_COUNT = 100;
-const STORAGE_KEY = 'ebsVoca1800_V2';
+const STORAGE_KEY = 'ebsVoca1800_V1';
 const DARK_KEY = 'ebsVoca1800_darkMode';
 const STREAK_KEY = 'ebsVoca1800_streak';
 
@@ -26,8 +26,12 @@ const EBBINGHAUS = [1, 3, 7, 14, 30, 60];
  * 2. INITIALIZATION
  * ========================================================================== */
 function initApp() {
-    // Migrate old data if exists
-    migrateOldData();
+    // Clean up old V2 key if exists (merge back to V1)
+    const v2Data = localStorage.getItem('ebsVoca1800_V2');
+    if (v2Data) {
+        localStorage.setItem(STORAGE_KEY, v2Data);
+        localStorage.removeItem('ebsVoca1800_V2');
+    }
 
     // Restore dark mode
     if (localStorage.getItem(DARK_KEY) === 'true') {
@@ -44,11 +48,34 @@ function initApp() {
 
     if (savedState) {
         const state = JSON.parse(savedState);
-        wordStats = state.wordStats || {};
 
-        if (state.lastDate === today && state.currentListIds && state.currentListIds.length > 0) {
+        // Migrate old SM-2 stats to Ebbinghaus if needed
+        const rawStats = state.wordStats || {};
+        wordStats = {};
+        Object.entries(rawStats).forEach(([id, stat]) => {
+            if (stat.level !== undefined) {
+                wordStats[id] = stat;
+            } else {
+                wordStats[id] = {
+                    level: stat.reps || 0,
+                    nextReview: stat.nextReview || 0,
+                    wrongCount: stat.wrongCount || 0,
+                    lastSeen: Date.now()
+                };
+            }
+        });
+
+        // Read saved list (handle both old object format and new ID format)
+        let savedIds = [];
+        if (state.currentListIds && state.currentListIds.length > 0) {
+            savedIds = state.currentListIds;
+        } else if (state.currentList && state.currentList.length > 0) {
+            savedIds = state.currentList.map(w => w.id).filter(Boolean);
+        }
+
+        if (state.lastDate === today && savedIds.length > 0) {
             // Same day → restore list from saved IDs
-            currentVocabList = idsToWords(state.currentListIds);
+            currentVocabList = idsToWords(savedIds);
             // Safety: remove words already known but not yet due for review
             const now = Date.now();
             currentVocabList = currentVocabList.filter(w => {
@@ -68,32 +95,6 @@ function initApp() {
     saveState();
     renderWords();
     updateLevelTitle();
-}
-
-function migrateOldData() {
-    const oldState = localStorage.getItem('ebsVoca1800_V1');
-    if (!oldState) return;
-    const old = JSON.parse(oldState);
-    if (old.wordStats) {
-        // Convert old SM-2 stats to Ebbinghaus level
-        const newStats = {};
-        Object.entries(old.wordStats).forEach(([id, stat]) => {
-            newStats[id] = {
-                level: stat.reps || 0,
-                nextReview: stat.nextReview || 0,
-                wrongCount: stat.wrongCount || 0,
-                lastSeen: Date.now()
-            };
-        });
-        wordStats = newStats;
-        // Save migrated data and remove old key
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            lastDate: old.lastDate,
-            currentListIds: (old.currentList || []).map(w => w.id),
-            wordStats: newStats
-        }));
-    }
-    localStorage.removeItem('ebsVoca1800_V1');
 }
 
 // Convert array of word IDs back to word objects from masterVocabList
