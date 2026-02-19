@@ -804,7 +804,10 @@ function toggleMeanings() {
     btn.innerText = isMeaningHidden ? "👁️ 뜻 보이기" : "👁️ 뜻 가리기";
     btn.classList.toggle('bg-indigo-600'); btn.classList.toggle('bg-gray-500');
     document.body.classList.toggle('hide-meaning', isMeaningHidden);
-    if (!isMeaningHidden) document.querySelectorAll('.revealed').forEach(el => el.classList.remove('revealed'));
+    document.querySelectorAll('.meaning-container').forEach(el => {
+        if (isMeaningHidden) el.classList.remove('revealed');
+        else el.classList.add('revealed');
+    });
 }
 
 function toggleCardMeaning(card) {
