@@ -300,8 +300,8 @@ function createCard(item, index) {
                 <button class="speaker-btn text-gray-300 hover:text-indigo-600 p-1 transition" onclick="event.stopPropagation(); speak('${item.word.replace(/'/g, "\\'")}')">
                     <span class="text-xl">🔊</span>
                 </button>
-                <button class="know-btn text-[10px] bg-emerald-500 text-white px-2 py-1 rounded-full font-bold shadow hover:bg-emerald-600 transition" onclick="event.stopPropagation(); markAsKnown(${item.id})">
-                    ✅ 알아요
+                <button class="text-[10px] bg-white text-gray-400 border border-gray-300 px-2 py-1 rounded-full font-bold shadow-sm hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition" onclick="event.stopPropagation(); markAsKnown(${item.id})">
+                    ✓ 외움
                 </button>
             </div>
         </div>
