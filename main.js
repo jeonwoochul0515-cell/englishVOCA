@@ -264,17 +264,17 @@ function createCard(item, index) {
     const family = typeof wordFamilyData !== 'undefined' && wordFamilyData[item.id];
     const confusing = typeof confusingPairData !== 'undefined' && confusingPairData[item.id];
 
-    if (root) badges += `<span class="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold border border-blue-200">🌿 어근</span>`;
-    if (phrasal) badges += `<span class="ml-1 text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-200">🔗 구동사</span>`;
-    if (colloc) badges += `<span class="ml-1 text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold border border-green-200">🤝 연어</span>`;
-    if (family) badges += `<span class="ml-1 text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold border border-purple-200">👨‍👩‍👧 단어가족</span>`;
-    if (confusing) badges += `<span class="ml-1 text-[9px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold border border-rose-200">⚠️ 혼동주의</span>`;
+    if (root) badges += `<span class="ml-1 text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold border border-blue-200">🌿 어근</span>`;
+    if (phrasal) badges += `<span class="ml-1 text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-200">🔗 구동사</span>`;
+    if (colloc) badges += `<span class="ml-1 text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold border border-green-200">🤝 연어</span>`;
+    if (family) badges += `<span class="ml-1 text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold border border-purple-200">👨‍👩‍👧 단어가족</span>`;
+    if (confusing) badges += `<span class="ml-1 text-[11px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold border border-rose-200">⚠️ 혼동주의</span>`;
 
     // IPA
     const ipaDisplay = item.ipa ? `<span class="card-ipa ipa-text ml-2">${item.ipa}</span>` : '';
 
     // Day badge
-    const dayBadge = `<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold">D${item.day}</span>`;
+    const dayBadge = `<span class="text-[12px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold">D${item.day}</span>`;
 
     card.innerHTML = `
         <div class="swipe-hint hint-left font-bold text-red-500 text-xs">알아요 ✅</div>
@@ -299,9 +299,6 @@ function createCard(item, index) {
             <div class="flex flex-col items-center gap-1 pointer-events-auto z-10">
                 <button class="speaker-btn text-gray-300 hover:text-indigo-600 p-1 transition" onclick="event.stopPropagation(); speak('${item.word.replace(/'/g, "\\'")}')">
                     <span class="text-xl">🔊</span>
-                </button>
-                <button class="text-[10px] bg-white text-gray-400 border border-gray-300 px-2 py-1 rounded-full font-bold shadow-sm hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition" onclick="event.stopPropagation(); markAsKnown(${item.id})">
-                    ✓ 외움
                 </button>
             </div>
         </div>
@@ -505,6 +502,10 @@ function checkQuizAnswer(btn, isCorrect, word) {
         quizCorrect++;
         document.getElementById('quiz-result').textContent = '정답! 🎉';
         document.getElementById('quiz-result').className = 'mt-4 p-3 rounded-lg text-sm font-bold bg-green-100 text-green-700';
+        document.getElementById('quiz-result').classList.remove('hidden');
+        // 정답이면 0.7초 후 자동으로 다음 문제
+        setTimeout(() => { quizIndex++; showQuizQuestion(); }, 700);
+        return;
     } else {
         btn.classList.add('wrong');
         document.querySelectorAll('.quiz-option').forEach(b => {
