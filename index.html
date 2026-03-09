@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="style.css?v=5">
@@ -199,10 +202,17 @@
     <p>EBS 수능연계 VOCA 1800 | SRS 간격반복 학습</p>
 </div>
 
-<!-- 4. 자바스크립트 (타임스탬프로 캐시 완전 방지) -->
+<!-- 4. 자바스크립트 -->
+<script src="vocab.js"></script>
+<script src="main.js"></script>
+
+<!-- 5. 서비스 워커 등록 (PWA) -->
 <script>
-document.write('<scr'+'ipt src="vocab.js?t='+Date.now()+'"></scr'+'ipt>');
-document.write('<scr'+'ipt src="main.js?t='+Date.now()+'"></scr'+'ipt>');
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('SW registered'))
+    .catch((err) => console.log('SW registration failed:', err));
+}
 </script>
 
 </body>
