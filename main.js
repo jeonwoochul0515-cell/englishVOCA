@@ -1109,6 +1109,10 @@ function switchMode(mode) {
     document.getElementById('stats-container').classList.toggle('hidden', mode !== 'stats');
     document.getElementById('dictionary-container').classList.toggle('hidden', mode !== 'dictionary');
 
+    // 플로팅 사전 버튼: 사전 모드에서는 숨김
+    const fab = document.getElementById('fab-dict');
+    if (fab) fab.classList.toggle('hidden', mode === 'dictionary');
+
     if (mode === 'quiz') startQuiz();
     if (mode === 'dictation') startDictation();
     if (mode === 'stats') renderStats();
