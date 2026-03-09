@@ -18,6 +18,10 @@ const TARGET_DAILY_COUNT = 100;
 const STORAGE_KEY = 'ebsVoca1800_V1';
 const DARK_KEY = 'ebsVoca1800_darkMode';
 const STREAK_KEY = 'ebsVoca1800_streak';
+const CUSTOM_WORDS_KEY = 'ebsVoca1800_customWords';
+const DICT_CACHE_KEY = 'ebsVoca1800_dictCache';
+let customWords = [];
+let dictCache = {};
 
 // Ebbinghaus forgetting curve intervals (days)
 const EBBINGHAUS = [1, 3, 7, 14, 30, 60];
@@ -26,6 +30,10 @@ const EBBINGHAUS = [1, 3, 7, 14, 30, 60];
  * 2. INITIALIZATION
  * ========================================================================== */
 function initApp() {
+    // Load custom words and dictionary cache
+    loadCustomWords();
+    loadDictCache();
+
     // Clean up old V2 key if exists (merge back to V1)
     const v2Data = localStorage.getItem('ebsVoca1800_V2');
     if (v2Data) {
@@ -97,10 +105,11 @@ function initApp() {
     updateLevelTitle();
 }
 
-// Convert array of word IDs back to word objects from masterVocabList
+// Convert array of word IDs back to word objects from masterVocabList + customWords
 function idsToWords(ids) {
     const map = {};
     masterVocabList.forEach(w => map[w.id] = w);
+    customWords.forEach(w => map[w.id] = w);
     return ids.map(id => map[id]).filter(Boolean);
 }
 
@@ -134,15 +143,16 @@ function updateStreak(lastDateStr) {
  * ========================================================================== */
 function fillList() {
     const now = Date.now();
+    const allWords = [...masterVocabList, ...customWords];
 
     // Review words: previously learned, now due for review
-    const reviewWords = masterVocabList.filter(w => {
+    const reviewWords = allWords.filter(w => {
         const stat = wordStats[w.id];
         return stat && stat.level > 0 && stat.nextReview <= now;
     });
 
     // New words: never seen before
-    const newWords = masterVocabList.filter(w => {
+    const newWords = allWords.filter(w => {
         return !wordStats[w.id] || wordStats[w.id].level === 0;
     });
 
@@ -163,7 +173,7 @@ function fillList() {
     // If still not enough, pull from any remaining words
     if (list.length < TARGET_DAILY_COUNT) {
         const usedIds = new Set(list.map(w => w.id));
-        const remaining = masterVocabList.filter(w => !usedIds.has(w.id));
+        const remaining = allWords.filter(w => !usedIds.has(w.id));
         shuffleArray(remaining);
         list = list.concat(remaining.slice(0, TARGET_DAILY_COUNT - list.length));
     }
@@ -274,7 +284,9 @@ function createCard(item, index) {
     const ipaDisplay = item.ipa ? `<span class="card-ipa ipa-text ml-2">${item.ipa}</span>` : '';
 
     // Day badge
-    const dayBadge = `<span class="text-[12px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold">D${item.day}</span>`;
+    const dayBadge = item.isCustom
+        ? `<span class="text-[12px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded font-bold">내 단어</span>`
+        : `<span class="text-[12px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold">D${item.day}</span>`;
 
     card.innerHTML = `
         <div class="swipe-hint hint-left font-bold text-red-500 text-xs">알아요 ✅</div>
@@ -456,9 +468,10 @@ let quizCorrect = 0;
 let quizWrongList = [];
 
 function startQuiz() {
+    const allWords = [...masterVocabList, ...customWords];
     const pool = activeDayFilter
-        ? masterVocabList.filter(w => w.day === activeDayFilter)
-        : currentVocabList.length > 0 ? [...currentVocabList] : [...masterVocabList];
+        ? allWords.filter(w => w.day === activeDayFilter)
+        : currentVocabList.length > 0 ? [...currentVocabList] : allWords;
     shuffleArray(pool);
     quizWords = pool.slice(0, 10);
     quizIndex = 0;
@@ -482,7 +495,7 @@ function showQuizQuestion() {
 
     // Generate 4 options (1 correct + 3 wrong)
     const options = [word];
-    const pool = masterVocabList.filter(w => w.id !== word.id);
+    const pool = [...masterVocabList, ...customWords].filter(w => w.id !== word.id);
     shuffleArray(pool);
     for (let i = 0; options.length < 4 && i < pool.length; i++) {
         if (!options.some(o => o.meaning === pool[i].meaning)) options.push(pool[i]);
@@ -563,9 +576,10 @@ let dictWrongList = [];
 let dictHintLevel = 0;
 
 function startDictation() {
+    const allWords = [...masterVocabList, ...customWords];
     const pool = activeDayFilter
-        ? masterVocabList.filter(w => w.day === activeDayFilter)
-        : currentVocabList.length > 0 ? [...currentVocabList] : [...masterVocabList];
+        ? allWords.filter(w => w.day === activeDayFilter)
+        : currentVocabList.length > 0 ? [...currentVocabList] : allWords;
     shuffleArray(pool);
     dictWords = pool.slice(0, 10);
     dictIndex = 0;
@@ -658,9 +672,10 @@ function showDictSummary() {
  * 11. STATS DASHBOARD
  * ========================================================================== */
 function renderStats() {
+    const masterIds = new Set(masterVocabList.map(w => String(w.id)));
     const total = masterVocabList.length;
-    const learned = Object.keys(wordStats).filter(id => (wordStats[id].level || 0) > 0).length;
-    const mastered = Object.keys(wordStats).filter(id => (wordStats[id].level || 0) >= EBBINGHAUS.length).length;
+    const learned = Object.keys(wordStats).filter(id => masterIds.has(id) && (wordStats[id].level || 0) > 0).length;
+    const mastered = Object.keys(wordStats).filter(id => masterIds.has(id) && (wordStats[id].level || 0) >= EBBINGHAUS.length).length;
     const remaining = total - learned;
     const streakData = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"count":0}');
 
@@ -706,7 +721,7 @@ function renderStats() {
         hardContainer.innerHTML = '<p class="text-center text-gray-400 text-sm">아직 틀린 단어가 없어요!</p>';
     } else {
         hardContainer.innerHTML = hardWords.map(([id, stat]) => {
-            const word = masterVocabList.find(w => w.id === parseInt(id));
+            const word = masterVocabList.find(w => w.id === parseInt(id)) || customWords.find(w => w.id === id);
             if (!word) return '';
             return `<div class="hard-word-item">
                 <div>
@@ -720,7 +735,351 @@ function renderStats() {
 }
 
 /* ==========================================================================
- * 12. MODE SWITCHING
+ * 12. DICTIONARY & CUSTOM WORDS
+ * ========================================================================== */
+function loadCustomWords() {
+    const saved = localStorage.getItem(CUSTOM_WORDS_KEY);
+    customWords = saved ? JSON.parse(saved) : [];
+}
+
+function saveCustomWords() {
+    localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(customWords));
+}
+
+function loadDictCache() {
+    const saved = localStorage.getItem(DICT_CACHE_KEY);
+    dictCache = saved ? JSON.parse(saved) : {};
+}
+
+function saveDictCache() {
+    localStorage.setItem(DICT_CACHE_KEY, JSON.stringify(dictCache));
+}
+
+async function searchDictionary() {
+    const input = document.getElementById('dict-search-input');
+    const query = input.value.trim().toLowerCase();
+    if (!query) return;
+
+    const resultsContainer = document.getElementById('dict-search-results');
+
+    // Find in EBS 1800
+    const exactMaster = masterVocabList.find(w => w.word.toLowerCase() === query);
+    const partialMasters = masterVocabList.filter(w =>
+        w.word.toLowerCase().startsWith(query) && w.word.toLowerCase() !== query
+    ).slice(0, 10);
+
+    // Find in offline dictionary
+    const offlineDictEntry = (typeof offlineDict !== 'undefined') ? offlineDict[query] : null;
+    const offlinePartials = (typeof offlineDict !== 'undefined')
+        ? Object.keys(offlineDict).filter(w => w.startsWith(query) && w !== query && !partialMasters.some(m => m.word.toLowerCase() === w)).slice(0, 10)
+        : [];
+
+    // Check if already in custom words
+    const exactCustom = customWords.find(w => w.word.toLowerCase() === query);
+
+    // Check cache
+    let apiData = dictCache[query] || null;
+
+    // Show immediate local results
+    renderDictSearchResults(query, exactMaster, partialMasters, exactCustom, apiData, offlineDictEntry, offlinePartials);
+
+    // Try API for richer data if not cached (non-blocking)
+    if (!apiData) {
+        try {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(query)}`);
+            if (response.ok) {
+                apiData = await response.json();
+                dictCache[query] = apiData;
+                saveDictCache();
+                renderDictSearchResults(query, exactMaster, partialMasters, exactCustom, apiData, offlineDictEntry, offlinePartials);
+            }
+        } catch (e) {
+            // Offline - local results already shown
+        }
+    }
+}
+
+function renderDictSearchResults(query, exactMaster, partialMasters, exactCustom, apiData, offlineDictEntry, offlinePartials) {
+    const container = document.getElementById('dict-search-results');
+    let html = '';
+    let wordFound = false;
+
+    // 1. API / Cache result card (richest data)
+    if (apiData && apiData.length > 0) {
+        const entry = apiData[0];
+        const word = entry.word;
+        const phonetic = entry.phonetic || (entry.phonetics && entry.phonetics.find(p => p.text) || {}).text || '';
+
+        let meaningsHtml = '';
+        entry.meanings.forEach(m => {
+            meaningsHtml += `<div class="dict-pos">${m.partOfSpeech}</div>`;
+            m.definitions.slice(0, 3).forEach(d => {
+                meaningsHtml += `<div class="dict-def">${d.definition}</div>`;
+                if (d.example) meaningsHtml += `<div class="dict-example">"${d.example}"</div>`;
+            });
+        });
+
+        // Korean meaning from offline dict
+        const korMeaning = offlineDictEntry || (exactMaster ? exactMaster.meaning : '');
+
+        html += `<div class="dict-result-card">
+            <div class="dict-word-header">
+                <span class="dict-word">${word}</span>
+                <span class="dict-phonetic">${phonetic}</span>
+                <button onclick="speak('${word.replace(/'/g, "\\'")}')" class="text-xl ml-2">🔊</button>
+            </div>
+            ${korMeaning ? `<div style="font-size:16px;font-weight:700;color:#4f46e5;margin-bottom:6px;">${korMeaning}</div>` : ''}
+            ${meaningsHtml}`;
+
+        if (exactMaster) {
+            html += `<div class="dict-badge-master">📘 EBS 1800 수록 (D${exactMaster.day})</div>`;
+        }
+
+        if (!exactMaster && !exactCustom) {
+            const firstPos = entry.meanings[0] ? entry.meanings[0].partOfSpeech : '';
+            const prefill = offlineDictEntry ? offlineDictEntry.replace(/"/g, '&quot;') : '';
+            html += `<div class="dict-add-section">
+                <input type="text" id="dict-custom-meaning" class="dict-meaning-input" placeholder="한국어 뜻 입력 (예: n. 뜻밖의 발견)" value="${prefill}">
+                <button onclick="addCustomWordFromSearch('${word.replace(/'/g, "\\'")}', '${phonetic.replace(/'/g, "\\'")}', '${firstPos}')" class="dict-add-btn">
+                    ➕ 학습 목록에 추가
+                </button>
+            </div>`;
+        } else if (exactCustom) {
+            html += `<div class="dict-badge-added">✅ 내 단어장에 추가됨 — ${exactCustom.meaning}</div>`;
+        }
+
+        html += `</div>`;
+        wordFound = true;
+
+    // 2. Offline dictionary entry (no API data)
+    } else if (offlineDictEntry) {
+        html += `<div class="dict-result-card">
+            <div class="dict-word-header">
+                <span class="dict-word">${query}</span>
+                <button onclick="speak('${query.replace(/'/g, "\\'")}')" class="text-xl ml-2">🔊</button>
+            </div>
+            <div style="font-size:17px;font-weight:700;color:#1e293b;margin:4px 0;">${offlineDictEntry}</div>`;
+
+        if (exactMaster) {
+            html += `<div class="dict-badge-master">📘 EBS 1800 수록 (D${exactMaster.day}) — ${exactMaster.meaning}</div>`;
+        }
+
+        if (!exactMaster && !exactCustom) {
+            const prefill = offlineDictEntry.replace(/"/g, '&quot;');
+            html += `<div class="dict-add-section">
+                <input type="text" id="dict-custom-meaning" class="dict-meaning-input" placeholder="한국어 뜻 입력" value="${prefill}">
+                <button onclick="addCustomWordFromSearch('${query.replace(/'/g, "\\'")}', '', '')" class="dict-add-btn">
+                    ➕ 학습 목록에 추가
+                </button>
+            </div>`;
+        } else if (exactCustom) {
+            html += `<div class="dict-badge-added">✅ 내 단어장에 추가됨 — ${exactCustom.meaning}</div>`;
+        }
+
+        html += `</div>`;
+        wordFound = true;
+
+    // 3. EBS master word only
+    } else if (exactMaster) {
+        html += `<div class="dict-result-card">
+            <div class="dict-word-header">
+                <span class="dict-word">${exactMaster.word}</span>
+                <span class="dict-phonetic">${exactMaster.ipa || ''}</span>
+                <button onclick="speak('${exactMaster.word.replace(/'/g, "\\'")}')" class="text-xl ml-2">🔊</button>
+            </div>
+            <div style="font-size:17px;font-weight:700;color:#1e293b;margin:4px 0;">${exactMaster.meaning}</div>
+            <div class="dict-badge-master">📘 EBS 1800 수록 (D${exactMaster.day})</div>
+        </div>`;
+        wordFound = true;
+    }
+
+    // 4. Not found anywhere
+    if (!wordFound) {
+        html += `<div class="dict-offline-notice">
+            😕 "${query}" — 사전에 없는 단어입니다.<br>
+            아래 "직접 추가"에서 수동으로 추가할 수 있습니다.
+        </div>`;
+    }
+
+    // 5. Partial matches from EBS 1800
+    if (partialMasters.length > 0) {
+        html += `<div class="dict-master-matches">
+            <div class="text-xs font-bold text-gray-500 mb-2 mt-3">📘 EBS 1800 관련 단어</div>`;
+        partialMasters.forEach(w => {
+            html += `<div class="dict-master-item" onclick="document.getElementById('dict-search-input').value='${w.word}'; searchDictionary();">
+                <div>
+                    <span class="font-bold text-sm">${w.word}</span>
+                    <span class="text-xs text-gray-400 ml-1">${w.ipa || ''}</span>
+                </div>
+                <span class="text-xs text-gray-500">${w.meaning}</span>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // 6. Partial matches from offline dictionary
+    if (offlinePartials && offlinePartials.length > 0) {
+        html += `<div class="dict-master-matches">
+            <div class="text-xs font-bold text-gray-500 mb-2 mt-3">📖 사전 관련 단어</div>`;
+        offlinePartials.forEach(w => {
+            html += `<div class="dict-master-item" onclick="document.getElementById('dict-search-input').value='${w}'; searchDictionary();">
+                <div><span class="font-bold text-sm">${w}</span></div>
+                <span class="text-xs text-gray-500">${offlineDict[w]}</span>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+function addCustomWordFromSearch(word, ipa, apiPos) {
+    const meaningInput = document.getElementById('dict-custom-meaning');
+    const meaning = meaningInput ? meaningInput.value.trim() : '';
+
+    if (!meaning) {
+        showToast('한국어 뜻을 입력해주세요');
+        if (meaningInput) meaningInput.focus();
+        return;
+    }
+
+    // Determine part of speech
+    let pos = 'Noun';
+    if (meaning.match(/^(v\.|동)/)) pos = 'Verb';
+    else if (meaning.match(/^(a\.|형)/)) pos = 'Adjective';
+    else if (meaning.match(/^(ad\.|부)/)) pos = 'Adverb';
+    else if (apiPos) {
+        const posMap = { noun: 'Noun', verb: 'Verb', adjective: 'Adjective', adverb: 'Adverb' };
+        pos = posMap[apiPos.toLowerCase()] || 'Noun';
+    }
+
+    const newWord = {
+        id: 'c_' + Date.now(),
+        word: word,
+        meaning: meaning,
+        partOfSpeech: pos,
+        day: 'custom',
+        ipa: ipa || '',
+        isCustom: true
+    };
+
+    // Check duplicate
+    if (customWords.some(w => w.word.toLowerCase() === word.toLowerCase())) {
+        showToast('이미 내 단어장에 있는 단어입니다');
+        return;
+    }
+
+    customWords.push(newWord);
+    saveCustomWords();
+
+    // Add to today's study list
+    currentVocabList.push(newWord);
+    saveState();
+
+    showToast(`"${word}" 학습 목록에 추가됨!`);
+    renderCustomWordsList();
+
+    // Refresh search to show "added" badge
+    searchDictionary();
+}
+
+function addManualWord() {
+    const wordInput = document.getElementById('manual-word');
+    const meaningInput = document.getElementById('manual-meaning');
+    const word = wordInput.value.trim();
+    const meaning = meaningInput.value.trim();
+
+    if (!word) { showToast('영어 단어를 입력해주세요'); wordInput.focus(); return; }
+    if (!meaning) { showToast('뜻을 입력해주세요'); meaningInput.focus(); return; }
+
+    // Check duplicate in master list
+    if (masterVocabList.some(w => w.word.toLowerCase() === word.toLowerCase())) {
+        showToast('EBS 1800에 이미 있는 단어입니다');
+        return;
+    }
+
+    // Check duplicate in custom words
+    if (customWords.some(w => w.word.toLowerCase() === word.toLowerCase())) {
+        showToast('이미 내 단어장에 있는 단어입니다');
+        return;
+    }
+
+    let pos = 'Noun';
+    if (meaning.match(/^(v\.|동)/)) pos = 'Verb';
+    else if (meaning.match(/^(a\.|형)/)) pos = 'Adjective';
+    else if (meaning.match(/^(ad\.|부)/)) pos = 'Adverb';
+
+    const newWord = {
+        id: 'c_' + Date.now(),
+        word: word,
+        meaning: meaning,
+        partOfSpeech: pos,
+        day: 'custom',
+        ipa: '',
+        isCustom: true
+    };
+
+    customWords.push(newWord);
+    saveCustomWords();
+
+    currentVocabList.push(newWord);
+    saveState();
+
+    wordInput.value = '';
+    meaningInput.value = '';
+
+    showToast(`"${word}" 학습 목록에 추가됨!`);
+    renderCustomWordsList();
+}
+
+function removeCustomWord(id) {
+    const word = customWords.find(w => w.id === id);
+    if (!word) return;
+    if (!confirm(`"${word.word}"를 내 단어장에서 삭제하시겠습니까?`)) return;
+
+    customWords = customWords.filter(w => w.id !== id);
+    saveCustomWords();
+
+    currentVocabList = currentVocabList.filter(w => w.id !== id);
+    delete wordStats[id];
+    saveState();
+
+    renderCustomWordsList();
+    showToast(`"${word.word}" 삭제됨`);
+}
+
+function renderCustomWordsList() {
+    const container = document.getElementById('custom-words-list');
+    const countEl = document.getElementById('custom-count');
+    if (!container) return;
+
+    countEl.textContent = `(${customWords.length}개)`;
+
+    if (customWords.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">아직 추가한 단어가 없습니다.<br>위에서 단어를 검색하거나 직접 추가해보세요!</p>';
+        return;
+    }
+
+    container.innerHTML = customWords.map(w => {
+        const stat = wordStats[w.id] || { level: 0, wrongCount: 0 };
+        const levelText = stat.level > 0 ? `Lv.${stat.level}` : '새 단어';
+        const levelColor = stat.level > 0 ? 'text-indigo-600' : 'text-gray-400';
+        return `<div class="custom-word-item">
+            <div style="flex:1;min-width:0;">
+                <span class="font-bold text-sm">${w.word}</span>
+                <span class="text-xs text-gray-400 ml-1">${w.ipa || ''}</span>
+                <br><span class="text-xs text-gray-600">${w.meaning}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="text-[10px] ${levelColor} font-bold">${levelText}</span>
+                <button class="delete-btn" onclick="removeCustomWord('${w.id}')">✕</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* ==========================================================================
+ * 13. MODE SWITCHING
  * ========================================================================== */
 function switchMode(mode) {
     currentMode = mode;
@@ -736,17 +1095,22 @@ function switchMode(mode) {
 
     flashcardControls.classList.toggle('hidden', mode !== 'flashcard');
     flashcardGuide.classList.toggle('hidden', mode !== 'flashcard');
-    posFilter.classList.toggle('hidden', mode === 'stats');
+    posFilter.classList.toggle('hidden', mode === 'stats' || mode === 'dictionary');
 
     // Show/hide containers
     document.getElementById('word-container').classList.toggle('hidden', mode !== 'flashcard');
     document.getElementById('quiz-container').classList.toggle('hidden', mode !== 'quiz');
     document.getElementById('dictation-container').classList.toggle('hidden', mode !== 'dictation');
     document.getElementById('stats-container').classList.toggle('hidden', mode !== 'stats');
+    document.getElementById('dictionary-container').classList.toggle('hidden', mode !== 'dictionary');
 
     if (mode === 'quiz') startQuiz();
     if (mode === 'dictation') startDictation();
     if (mode === 'stats') renderStats();
+    if (mode === 'dictionary') {
+        renderCustomWordsList();
+        setTimeout(() => document.getElementById('dict-search-input').focus(), 100);
+    }
 }
 
 /* ==========================================================================
@@ -798,10 +1162,6 @@ function updateUndoButton() {
     if (btn) btn.classList.toggle('hidden', !deletedHistory.length);
 }
 
-function markAsKnown(wordId) {
-    const item = currentVocabList.find(w => w.id === wordId);
-    if (item) handleSwipeLeft(item);
-}
 
 function removeWord(item) {
     const idx = currentVocabList.findIndex(w => w.id === item.id);

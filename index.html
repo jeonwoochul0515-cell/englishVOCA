@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 </head>
 <body class="bg-gray-100 min-h-screen pb-20">
@@ -37,6 +37,9 @@
             </button>
             <button onclick="switchMode('dictation')" id="tab-dictation" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition mode-tab">
                 ✍️ 받아쓰기
+            </button>
+            <button onclick="switchMode('dictionary')" id="tab-dictionary" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition mode-tab">
+                📖 사전
             </button>
             <button onclick="switchMode('stats')" id="tab-stats" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition mode-tab">
                 📊 통계
@@ -140,6 +143,46 @@
         </div>
     </div>
 
+    <!-- 사전 모드 컨테이너 -->
+    <div id="dictionary-container" class="hidden space-y-4">
+        <!-- 검색 -->
+        <div class="bg-white rounded-xl shadow p-4">
+            <div class="flex gap-2">
+                <input type="text" id="dict-search-input" placeholder="영어 단어 검색..."
+                       class="flex-1 border-2 border-gray-300 rounded-lg px-4 py-3 text-lg font-bold focus:border-indigo-500 focus:outline-none transition"
+                       autocomplete="off" autocapitalize="off" spellcheck="false"
+                       onkeydown="if(event.key==='Enter') searchDictionary()">
+                <button onclick="searchDictionary()" class="bg-indigo-600 text-white px-5 rounded-lg font-bold shadow hover:bg-indigo-700 transition text-xl">
+                    🔍
+                </button>
+            </div>
+            <div id="dict-search-results" class="mt-3"></div>
+        </div>
+
+        <!-- 직접 추가 -->
+        <div class="bg-white rounded-xl shadow p-4">
+            <h3 class="font-bold text-sm text-gray-700 mb-2">✏️ 직접 추가</h3>
+            <div class="space-y-2">
+                <div class="flex gap-2">
+                    <input type="text" id="manual-word" placeholder="영어 단어"
+                           class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                           autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <input type="text" id="manual-meaning" placeholder="뜻 (예: n. 행복)"
+                           class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+                </div>
+                <button onclick="addManualWord()" class="w-full bg-teal-600 text-white py-2 rounded-lg text-sm font-bold shadow hover:bg-teal-700 transition">
+                    ➕ 학습 목록에 추가
+                </button>
+            </div>
+        </div>
+
+        <!-- 내 단어장 -->
+        <div class="bg-white rounded-xl shadow p-4">
+            <h3 class="font-bold text-sm text-gray-700 mb-3">📝 내 단어장 <span class="text-indigo-600" id="custom-count">(0개)</span></h3>
+            <div id="custom-words-list" class="space-y-2"></div>
+        </div>
+    </div>
+
     <!-- 통계 대시보드 -->
     <div id="stats-container" class="hidden space-y-4">
         <div class="grid grid-cols-2 gap-3">
@@ -204,6 +247,7 @@
 
 <!-- 4. 자바스크립트 -->
 <script src="vocab.js"></script>
+<script src="dictionary.js"></script>
 <script src="main.js"></script>
 
 <!-- 5. 서비스 워커 등록 (PWA) -->

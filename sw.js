@@ -1,4 +1,4 @@
-const CACHE_NAME = 'voca1800-v1';
+const CACHE_NAME = 'voca1800-v2';
 
 // 오프라인에서도 작동하도록 캐싱할 파일 목록
 const ASSETS_TO_CACHE = [
@@ -7,6 +7,7 @@ const ASSETS_TO_CACHE = [
   '/style.css',
   '/main.js',
   '/vocab.js',
+  '/dictionary.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
