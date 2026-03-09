@@ -323,6 +323,7 @@ function createCard(item, index) {
  * 7. ENRICHED DATA DISPLAY BUILDERS
  * ========================================================================== */
 function buildRootDisplay(root) {
+    if (!root || !root.parts) return '';
     let partsHtml = '';
     for (let i = 0; i < root.parts.length; i++) {
         if (i > 0) partsHtml += `<span class="root-plus">+</span>`;
@@ -335,6 +336,7 @@ function buildRootDisplay(root) {
 }
 
 function buildPhrasalDisplay(phrasal) {
+    if (!phrasal || !phrasal.verbs) return '';
     const items = phrasal.verbs.map((v, i) => {
         let html = i > 0 ? '<div class="phrasal-separator"></div>' : '';
         html += `<div class="phrasal-formula"><span class="phrasal-verb">${v.pv}</span></div>`;
@@ -348,6 +350,7 @@ function buildPhrasalDisplay(phrasal) {
 }
 
 function buildCollocationDisplay(colloc) {
+    if (!colloc || !colloc.collocations) return '';
     const items = colloc.collocations.map(c => {
         let html = `<div class="collocation-item"><span class="collocation-combo">${c.combo}</span>`;
         if (c.note) html += `<span class="collocation-wrong">${c.note}</span>`;
@@ -358,6 +361,7 @@ function buildCollocationDisplay(colloc) {
 }
 
 function buildFamilyDisplay(family) {
+    if (!family || !family.family) return '';
     const members = family.family.map(m =>
         `<span class="family-member"><span class="family-member-word">${m.word}</span><span class="family-member-pos">${m.pos}</span><span class="family-member-meaning">${m.meaning}</span></span>`
     ).join('');
@@ -365,6 +369,7 @@ function buildFamilyDisplay(family) {
 }
 
 function buildConfusingDisplay(conf) {
+    if (!conf || !conf.pairs) return '';
     return conf.pairs.map(p => `
         <div class="confusing-box mt-1">
             <div class="confusing-vs">
