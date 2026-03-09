@@ -373,10 +373,10 @@ function attachSwipeEvents(card, item, index) {
     let startX = 0, currentX = 0, isDragging = false;
     let longPressTimer = null, longPressRevealed = false;
 
-    card.addEventListener('touchstart', e => {
-        if (e.target.closest('.speaker-btn')) return;
-        startX = e.touches[0].clientX;
-        currentX = startX;
+    function onStart(x, e) {
+        if (e && e.target.closest('.speaker-btn')) return;
+        startX = x;
+        currentX = x;
         isDragging = true;
         longPressRevealed = false;
         card.style.transition = 'none';
@@ -390,19 +390,19 @@ function attachSwipeEvents(card, item, index) {
                 }
             }, 2000);
         }
-    }, {passive: true});
+    }
 
-    card.addEventListener('touchmove', e => {
+    function onMove(x) {
         if (!isDragging) return;
-        currentX = e.touches[0].clientX;
+        currentX = x;
         const diffX = currentX - startX;
         if (Math.abs(diffX) > 10 && longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
         card.style.transform = `translateX(${diffX}px)`;
         card.querySelector('.hint-left').style.opacity = diffX < 0 ? Math.min(-diffX / 100, 1) : 0;
         card.querySelector('.hint-right').style.opacity = diffX > 0 ? Math.min(diffX / 100, 1) : 0;
-    }, {passive: true});
+    }
 
-    card.addEventListener('touchend', () => {
+    function onEnd() {
         if (!isDragging) return;
         isDragging = false;
         if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
@@ -418,14 +418,12 @@ function attachSwipeEvents(card, item, index) {
         if (Math.abs(diffX) < 5) {
             toggleCardMeaning(card);
         } else if (diffX < -100) {
-            // Swipe left → Know → remove from list
             const filtered = getFilteredList();
             const nextWord = filtered[filtered.indexOf(item) + 1];
             if (nextWord) speak(nextWord.word);
             card.style.transform = 'translateX(-120%)';
             setTimeout(() => handleSwipeLeft(item), 200);
         } else if (diffX > 100) {
-            // Swipe right → Don't know → move to back
             const filtered = getFilteredList();
             const nextWord = filtered[filtered.indexOf(item) + 1];
             if (nextWord) speak(nextWord.word);
@@ -435,7 +433,18 @@ function attachSwipeEvents(card, item, index) {
             card.style.transition = 'transform 0.3s';
             card.style.transform = 'translateX(0)';
         }
-    });
+    }
+
+    // Touch events (모바일)
+    card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e), {passive: true});
+    card.addEventListener('touchmove', e => onMove(e.touches[0].clientX), {passive: true});
+    card.addEventListener('touchend', onEnd);
+
+    // Mouse events (PC)
+    card.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e); });
+    card.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientX); });
+    card.addEventListener('mouseup', onEnd);
+    card.addEventListener('mouseleave', () => { if (isDragging) onEnd(); });
 }
 
 /* ==========================================================================
