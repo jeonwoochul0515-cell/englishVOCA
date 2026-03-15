@@ -759,3 +759,18 @@ body.dark-mode .ipa-text {
 body.dark-mode .card-ipa {
     color: #a78bfa;
 }
+
+/* --- PWA Install & Offline Banners --- */
+#offline-banner:not(.hidden) ~ .sticky {
+    top: 24px;
+}
+
+body.dark-mode #install-banner {
+    background: #312e81;
+}
+body.dark-mode #install-banner .text-indigo-200 {
+    color: #a5b4fc;
+}
+body.dark-mode #offline-banner {
+    background: #92400e;
+}

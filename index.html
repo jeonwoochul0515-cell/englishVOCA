@@ -14,7 +14,6 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="style.css?v=6">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 </head>
 <body class="bg-gray-100 min-h-screen pb-20">
 
@@ -245,6 +244,29 @@
     🔍
 </button>
 
+<!-- 오프라인 표시 배너 -->
+<div id="offline-banner" class="fixed top-0 left-0 w-full bg-amber-500 text-white text-center text-xs font-bold py-1 z-[200] hidden">
+    오프라인 모드 - 저장된 데이터로 학습 중
+</div>
+
+<!-- 앱 설치 배너 -->
+<div id="install-banner" class="fixed bottom-20 left-4 right-4 z-[100] bg-indigo-600 text-white rounded-xl shadow-2xl p-4 hidden max-w-md mx-auto">
+    <div class="flex items-center gap-3">
+        <img src="/icons/icon-192.png" alt="앱 아이콘" class="w-12 h-12 rounded-xl">
+        <div class="flex-1">
+            <div class="font-bold text-sm">VOCA 1800 앱 설치</div>
+            <div class="text-xs text-indigo-200">홈 화면에 추가하여 빠르게 학습!</div>
+        </div>
+        <button id="install-btn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg text-sm font-bold shrink-0">설치</button>
+        <button id="install-close" class="text-indigo-200 text-xl ml-1 shrink-0">&times;</button>
+    </div>
+</div>
+
+<!-- SW 업데이트 배너 -->
+<div id="update-banner" class="fixed top-0 left-0 w-full bg-emerald-600 text-white text-center text-sm font-bold py-2 z-[200] hidden cursor-pointer" onclick="location.reload()">
+    새 버전이 있습니다. 여기를 눌러 업데이트하세요!
+</div>
+
 <!-- 푸터 -->
 <div class="text-center text-gray-400 text-xs pb-8 px-4 fixed bottom-0 w-full bg-gray-100 pt-2 pointer-events-none footer-bg">
     <p>EBS 수능연계 VOCA 1800 | SRS 간격반복 학습</p>
@@ -255,13 +277,71 @@
 <script src="dictionary.js"></script>
 <script src="main.js"></script>
 
-<!-- 5. 서비스 워커 등록 (PWA) -->
+<!-- 5. PWA: 서비스워커, 설치 프롬프트, 오프라인 감지 -->
 <script>
+// --- 서비스 워커 등록 & 업데이트 감지 ---
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('SW registered'))
-    .catch((err) => console.log('SW registration failed:', err));
+  navigator.serviceWorker.register('/sw.js').then((reg) => {
+    console.log('SW registered');
+    // 새 버전 감지
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          document.getElementById('update-banner').classList.remove('hidden');
+        }
+      });
+    });
+  }).catch((err) => console.log('SW registration failed:', err));
+
+  // 컨트롤러 변경 시 자동 리로드
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    location.reload();
+  });
 }
+
+// --- 앱 설치 프롬프트 ---
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // 이미 닫은 적 있으면 표시하지 않음
+  if (localStorage.getItem('install-dismissed')) return;
+  document.getElementById('install-banner').classList.remove('hidden');
+});
+
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  console.log('Install:', result.outcome);
+  deferredPrompt = null;
+  document.getElementById('install-banner').classList.add('hidden');
+});
+
+document.getElementById('install-close').addEventListener('click', () => {
+  document.getElementById('install-banner').classList.add('hidden');
+  localStorage.setItem('install-dismissed', '1');
+});
+
+// 이미 설치된 경우 배너 숨김
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.add('hidden');
+  deferredPrompt = null;
+});
+
+// --- 오프라인/온라인 감지 ---
+function updateOnlineStatus() {
+  const banner = document.getElementById('offline-banner');
+  if (!navigator.onLine) {
+    banner.classList.remove('hidden');
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
 </script>
 
 </body>
